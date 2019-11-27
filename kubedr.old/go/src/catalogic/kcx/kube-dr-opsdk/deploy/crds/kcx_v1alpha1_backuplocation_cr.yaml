@@ -1,7 +1,0 @@
-apiVersion: kcx.catalogicsoftware.com/v1alpha1
-kind: BackupLocation
-metadata:
-  name: example-backuplocation
-spec:
-  # Add fields here
-  size: 3

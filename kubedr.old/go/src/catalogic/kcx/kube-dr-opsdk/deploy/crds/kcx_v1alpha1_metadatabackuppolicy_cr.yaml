@@ -1,7 +1,0 @@
-apiVersion: kcx.catalogicsoftware.com/v1alpha1
-kind: MetadataBackupPolicy
-metadata:
-  name: example-metadatabackuppolicy
-spec:
-  # Add fields here
-  size: 3
