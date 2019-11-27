@@ -339,7 +339,7 @@ and docs for your cluster distro.
 In future, we will provide an option to browse Kubernetes resources
 from a backup without having to restore entire etcd snapshot.
 
-## Tasks before Alpha
+## Tasks before Alpha release
 
 - Figure out a name for the project. The current code name *kubedr* is
   used at several places and it needs to be replaced if and when we
