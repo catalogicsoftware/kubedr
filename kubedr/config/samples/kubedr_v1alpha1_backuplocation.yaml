@@ -1,0 +1,7 @@
+apiVersion: kubedr.catalogicsoftware.com/v1alpha1
+kind: BackupLocation
+metadata:
+  name: backuplocation-sample
+spec:
+  # Add fields here
+  foo: bar

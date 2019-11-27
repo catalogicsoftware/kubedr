@@ -1,0 +1,13 @@
+version: "2"
+domain: catalogicsoftware.com
+repo: kubedr
+resources:
+- group: kubedr
+  version: v1alpha1
+  kind: BackupLocation
+- group: kubedr
+  version: v1alpha1
+  kind: MetadataBackupPolicy
+- group: kubedr
+  version: v1alpha1
+  kind: MetadataBackupRecord

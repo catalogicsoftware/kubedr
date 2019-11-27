@@ -1,0 +1,6 @@
+apiVersion: kubedr.catalogicsoftware.com/v1alpha1
+kind: MetadataBackupRecord
+metadata:
+  name: mbr-2aab5a88
+spec:
+  snapshotId: 2aab5a88

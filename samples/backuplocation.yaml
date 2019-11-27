@@ -1,0 +1,8 @@
+apiVersion: kubedr.catalogicsoftware.com/v1alpha1
+kind: BackupLocation
+metadata:
+  name: local-minio
+spec:
+  url: http://10.96.57.3:9000
+  bucketName: testbucket
+  credentials: minio-creds

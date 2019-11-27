@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testpod
+spec:
+  volumes:
+  - name: minio-creds
+    secret:
+      secretName: minio-creds
+  containers:
+  - name: test
+    image: busybox
+    command: 
+    - sleep
+    - "3600"
+    env:
+    - name: MINIO_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: access_key
+    - name: MINIO_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: secret_key
+    - name: RESTIC_PASSWORD
+      value: "testpass"
+    volumeMounts:
+    - name: minio-creds
+      mountPath: "/etc/credentials"
+      readOnly: true
+  restartPolicy: Never

@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restic-init
+spec:
+  containers:
+  - name: restic-init
+    image: restic/restic
+    args:
+    - -r
+    - s3:http://10.107.63.254:9000/testbucket8
+    - init
+    env:
+    - name: MINIO_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: access_key
+    - name: MINIO_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: secret_key
+    - name: RESTIC_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: restic_repo_password
+  restartPolicy: Never

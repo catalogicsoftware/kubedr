@@ -1,0 +1,7 @@
+apiVersion: kubedr.catalogicsoftware.com/v1alpha1
+kind: MetadataBackupPolicy
+metadata:
+  name: metadatabackuppolicy-sample
+spec:
+  # Add fields here
+  foo: bar

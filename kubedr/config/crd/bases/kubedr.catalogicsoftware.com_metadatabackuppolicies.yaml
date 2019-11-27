@@ -1,0 +1,87 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.2
+  creationTimestamp: null
+  name: metadatabackuppolicies.kubedr.catalogicsoftware.com
+spec:
+  group: kubedr.catalogicsoftware.com
+  names:
+    kind: MetadataBackupPolicy
+    listKind: MetadataBackupPolicyList
+    plural: metadatabackuppolicies
+    singular: metadatabackuppolicy
+  scope: ""
+  validation:
+    openAPIV3Schema:
+      description: MetadataBackupPolicy is the Schema for the metadatabackuppolicies
+        API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: MetadataBackupPolicySpec defines the desired state of MetadataBackupPolicy
+          properties:
+            certsDir:
+              description: Optional. If not provided, certificates will not be backed
+                up.
+              type: string
+            destination:
+              description: Name of the S3 BackupLocation resource kubebuilder:validation:MinLength:=1
+              type: string
+            etcdCreds:
+              description: Name of the "secret" containing etcd certificates. If not
+                provided, "etcd-creds" is used as the name of the secret comprising
+                of credentials.
+              type: string
+            etcdEndpoint:
+              description: If not provided, "https://127.0.0.1:2379" will be used.
+              type: string
+            options:
+              additionalProperties:
+                type: string
+              description: Refers to name of a configmap containing list of key=value
+                pairs. Options string `json:"options"`
+              type: object
+            retainNumBackups:
+              description: Should we even have default?
+              format: int64
+              type: integer
+            schedule:
+              description: The value of this field should be same as "schedule" in
+                "cronjob".
+              type: string
+            suspend:
+              type: boolean
+          required:
+          - destination
+          - schedule
+          type: object
+        status:
+          description: MetadataBackupPolicyStatus defines the observed state of MetadataBackupPolicy
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

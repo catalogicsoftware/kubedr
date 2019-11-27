@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-dr
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: kube-dr
+  template:
+    metadata:
+      labels:
+        name: kube-dr
+    spec:
+      serviceAccountName: kube-dr
+      containers:
+        - name: kube-dr
+          # Replace this with the built image name
+          image: REPLACE_IMAGE
+          command:
+          - kube-dr
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "kube-dr"
