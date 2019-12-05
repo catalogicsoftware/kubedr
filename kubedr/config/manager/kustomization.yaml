@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: kubedr
-  newTag: "1.29"
+  newTag: "1.32"
