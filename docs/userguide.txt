@@ -1,0 +1,70 @@
+
+# Introduction
+
+*TBD* Briefly explain what the project does. 
+
+# Rationale
+
+*TBD* Explain why this project exists and the advantages. 
+
+# Installation
+
+# # Requirements/Limitations
+
+- Mention that for now, the product is on-prem only. 
+
+- cert-manager
+
+- Kubernetes version. Target 1.16 but ask Jessie to test all the way
+  back to 1.12.
+
+# # Steps to install
+
+- In Alpha, it is probably ok to ask people to apply the manifest file
+  directly from repo. *TODO* Check in full manifest file.
+
+- Two images need to be made available.
+
+  - controller manager
+
+  - backup container
+
+- For now, build images and push them to local registry. 
+
+*TODO* Have a build script that internally calls "make" with right
+IMG value.
+
+- How to verify that install succeeded? Give kubectl command to list
+  the resources in the kubedr-system namespace.
+
+# Configuration
+
+Before backups can be performed, a backup target location needs to be
+registered. The project currently supports any S3 target as backup
+target. If the destination bucket doesn't exist, it will automatically
+be created. 
+
+*TBD* Explain how to configure a BackupLocation and what happens when
+one is configured?
+
+# Backup
+
+*TBD* Explain how to create MetadataBackupPolicy
+
+# Restore
+
+*TBD* Explain DR restore steps
+
+# Monitoring and Metrics
+
+*TBD* Explain about scraping metrics with Prometheus and visualising
+with Grafana. 
+
+# Troubleshooting
+
+- How to check logs?
+
+- How to collect logs? What information needs to be sent for debugging?
+
+
+

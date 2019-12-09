@@ -15,6 +15,6 @@ RUN apk update \
 COPY etcdctl /usr/local/bin
 COPY restic /usr/local/bin
 COPY kubectl /usr/local/bin
-COPY kubedrbackup.sh /usr/local/bin
+COPY kubedrutil.sh /usr/local/bin
 
 # ENTRYPOINT ["/usr/local/bin/restic"]

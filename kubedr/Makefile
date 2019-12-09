@@ -29,6 +29,15 @@ run: generate fmt vet manifests
 install: manifests
 	kustomize build config/crd | kubectl apply -f -
 
+# This target is a combination of "docker-build and "deploy". 
+# Basically, a docker image with the controllers is built and a YAML
+# file is generated containing all the resources. Unlike in "deploy", the
+# file is not deployed.
+build:
+	docker build . -t ${IMG}
+	cd config/manager && kustomize edit set image controller=${IMG}
+	kustomize build config/default > kubedr.yaml
+
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
 deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}

@@ -427,12 +427,13 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 							Containers: []corev1.Container {
 								{
 									Name: cr.Name + "-kcx-backup",
-									Image:   "kubedrbackup:0.47",
+									// TODO: We need to inject the exact image name using env variable.
+									Image:   "kubedrutil:0.42",
 									VolumeMounts: volumeMounts,
 									Env: env,
 
 									Args: []string {
-										"sh", "/usr/local/bin/kubedrbackup.sh",
+										"sh", "/usr/local/bin/kubedrutil.sh",
 									},
 								},
 							},
