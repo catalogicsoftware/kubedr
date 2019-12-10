@@ -428,7 +428,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 								{
 									Name: cr.Name + "-kcx-backup",
 									// TODO: We need to inject the exact image name using env variable.
-									Image:   "kubedrutil:0.42",
+									Image:   "docker-registry.devad.catalogic.us:5000/kubedrutil:0.42",
 									VolumeMounts: volumeMounts,
 									Env: env,
 

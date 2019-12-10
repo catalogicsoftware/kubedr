@@ -1,4 +1,16 @@
 
+- [Kubernetes Metadata Backup](#kubernetes-metadata-backup)
+  * [Installation](#installation)
+  * [Configuration](#configuration)
+    + [Master nodes](#master-nodes)
+    + [S3 end point](#s3-end-point)
+  * [Backup](#backup)
+  * [Pausing backups](#pausing-backups)
+  * [Restore](#restore)
+  * [Monitoring](#monitoring)
+  * [Troubleshooting](#troubleshooting)
+  * [Uninstall](#uninstall)
+  
 # Kubernetes Metadata Backup
 
 ## Installation
@@ -7,7 +19,7 @@
   for webhooks to work.
 
 - Make sure that `kubectl` is set up to access your cluster and
-  install `kubedr.yaml` (available at the root of this repo) by
+  install `kubedr/kubedr.yaml` (available at the root of this repo) by
   running the following command:
 
 
@@ -138,7 +150,14 @@ $ kubectl -n kubedr-system apply -f backuplocation.yaml
 ```
 
 At this time, *Kubedr* will initialize a backup repository at the
-configured bucket (creating the bucket if necessary).
+configured bucket (creating the bucket if necessary). To verify the
+initialization process, run the following command and ensure that
+status is "Completed".
+
+```bash
+$ kubectl -n kubedr-system get pod/<BACKUP_LOCATION_NAME>-init-pod
+```
+
 
 ## Backup
 
@@ -364,8 +383,10 @@ $ alias k="kubectl -n kubedr-system"
 
 $ k get all
 
-$ k 
+$ k describe all
 
+# For pods that show errors
+$ k logs <PODNAME> --all-containers
 ```
 
 ## Uninstall
@@ -375,8 +396,5 @@ To uninstall, delete the namespace *kubedr-system*
 ```bash
 $ kubectl delete namespace kubedr-system
 ```
-
-
-
 
 
