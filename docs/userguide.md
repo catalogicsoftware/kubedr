@@ -13,6 +13,44 @@
   
 # Kubernetes Metadata Backup
 
+## Introduction
+
+This project, code named *Kubedr*, is about protecting metadata of
+Kubernetes stored in *etcd*. In addition, certificates can be backed up
+as well but that is optional.
+
+**The project is currently in Alpha phase. Changes can be made that
+may not be backwards compatible. There may be many corner cases that
+may not work.**
+
+## Overview
+
+Kubernetes stores all its objects in *etcd* so backing up data in
+*etcd* is crucial for DR purposes. This project implements a tool that
+backs up *etcd* data and certificates to any S3 bucket. It follows the
+*operator* pattern that is popular in Kubernetes world.
+
+An operator is basically a combination of *custom resources (CRs)*
+coupled with *controllers* that manage the CRs. There would be one
+controller for each CR. In addition to controllers, operators can also
+contain *webhooks* that can be used to validate the data in resources
+as well as to set defaults when some fields are not provided in the
+input. Our operator uses webhooks for both these purposes.
+
+For data transfer to S3, we currently use a tool called
+[restic](https://restic.net) but we will be able to change specific
+backup tool in a backwards compatible manner.
+
+## Requirements
+
+- Since we need direct access to etcd, *Kubedr* currently works only
+  for on-prem clusters or where ever etcd can be accessed. We are
+  investigating how to extend the same functionality to clusters where
+  etcd snapshot cannot be taken.
+
+- The project is tested using 1.16 but we are currently verifying how
+  many older versions can be supported.
+
 ## Installation
 
 - Install [cert-manager](https://cert-manager.io/). This is required
@@ -32,7 +70,12 @@
 
   Running this command will create a new namespace called
   *kubedr-system* and starts all the necessary pods, services,
-  webhooks, and deployments in that namespace. 
+  webhooks, and deployments in that namespace. It also installs the
+  following *Custom Resource Definitions (CRDs)*:
+
+  * BackupLocation
+  * MetadataBackupPolicy
+  * MetadataBackupRecord
 
 - Note that the following two images are required for *kubedr*  to
   work. They are:
@@ -397,4 +440,32 @@ To uninstall, delete the namespace *kubedr-system*
 $ kubectl delete namespace kubedr-system
 ```
 
+If you don't need the backups already done, go ahead and delete the
+bucket on S3.
 
+TBD: Need to delete CRDs as well?
+
+## Roadmap
+
+The following list includes feature enhancements as well as
+robustness improvements to the project.
+
+- Perform *Referential Integrity* checks and prevent deletion of
+  resources that are currently in use.
+
+- Make it easy to switch backup tool. Currently, we use
+  [restic](https://restic.net) but the design should support easily
+  switching to any other tool.
+
+- The current restore support assumes a DR use case where entire etcd
+  snapshot needs to be restored. But we also want to support granular
+  restore where one can restore individual resources.
+
+- Auditing of changes. Provide a way to check what changed between
+  backups and also to see how a particular resource has evolved over
+  time.
+
+- Support clusters in the cloud. Currently, *Kubedr* requires direct
+  access to etcd so that a snapshot can be created. This may not be
+  possible in the cloud so we may need to iterate over all the
+  objects and back them up.
