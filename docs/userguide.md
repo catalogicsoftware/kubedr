@@ -1,16 +1,23 @@
 
-- [Kubernetes Metadata Backup](#kubernetes-metadata-backup)
-  * [Installation](#installation)
-  * [Configuration](#configuration)
-    + [Master nodes](#master-nodes)
-    + [S3 end point](#s3-end-point)
-  * [Backup](#backup)
-  * [Pausing backups](#pausing-backups)
-  * [Restore](#restore)
-  * [Monitoring](#monitoring)
-  * [Troubleshooting](#troubleshooting)
-  * [Uninstall](#uninstall)
-  
+
+# Table of Contents
+
+* [Kubernetes Metadata Backup](#Kubernetes-Metadata-Backup)
+	* [Introduction](#Introduction)
+	* [Overview](#Overview)
+	* [Requirements](#Requirements)
+	* [Installation](#Installation)
+	* [Configuration](#Configuration)
+		* [Master nodes](#Master-nodes)
+		* [S3 end point](#S3-end-point)
+	* [Backup](#Backup)
+	* [Pausing backups](#Pausing-backups)
+	* [Restore](#Restore)
+	* [Monitoring](#Monitoring)
+	* [Troubleshooting](#Troubleshooting)
+	* [Uninstall](#Uninstall)
+	* [Roadmap](#Roadmap)
+
 # Kubernetes Metadata Backup
 
 ## Introduction
@@ -456,6 +463,8 @@ robustness improvements to the project.
 - Make it easy to switch backup tool. Currently, we use
   [restic](https://restic.net) but the design should support easily
   switching to any other tool.
+
+- Support a file system target in addition to S3.
 
 - The current restore support assumes a DR use case where entire etcd
   snapshot needs to be restored. But we also want to support granular
