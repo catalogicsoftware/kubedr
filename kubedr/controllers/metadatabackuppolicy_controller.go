@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -255,6 +256,14 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.MetadataBackupPolicy, 
 	namespace string, cronJobName string, log logr.Logger) (*batchv1beta1.CronJob, error) {
 
+	kubedrUtilImage := os.Getenv("KUBEDR_UTIL_IMAGE")
+	if kubedrUtilImage == "" {
+		// This should really not happen.
+		err := errors.New("KUBEDR_UTIL_IMAGE is not set")
+		log.Error(err, "")
+		return nil, err
+	}
+
 	backupLocation := &kubedrv1alpha1.BackupLocation{}
 	backupLocKey := types.NamespacedName{Namespace: namespace, Name: cr.Spec.Destination}
 	err := r.Get(context.TODO(), backupLocKey, backupLocation)
@@ -427,8 +436,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 							Containers: []corev1.Container {
 								{
 									Name: cr.Name + "-kcx-backup",
-									// TODO: We need to inject the exact image name using env variable.
-									Image:   "docker-registry.devad.catalogic.us:5000/kubedrutil:0.42",
+									Image:   kubedrUtilImage,
 									VolumeMounts: volumeMounts,
 									Env: env,
 

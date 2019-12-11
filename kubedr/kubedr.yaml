@@ -496,24 +496,33 @@ spec:
       control-plane: controller-manager
   template:
     metadata:
-      annotations:
-        prometheus.io/scrape: "true"
       labels:
         control-plane: controller-manager
     spec:
       containers:
       - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=10
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+      - args:
+        - --metrics-addr=127.0.0.1:8080
         - --enable-leader-election
         command:
         - /manager
+        env:
+        - name: KUBEDR_UTIL_IMAGE
+          value: docker-registry.devad.catalogic.us:5000/kubedrutil:0.42
         image: docker-registry.devad.catalogic.us:5000/kubedr:0.42
         name: manager
         ports:
         - containerPort: 9443
           name: webhook-server
-          protocol: TCP
-        - containerPort: 8080
-          name: metrics
           protocol: TCP
         resources:
           limits:
@@ -554,20 +563,6 @@ metadata:
   namespace: kubedr-system
 spec:
   selfSigned: {}
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  labels:
-    control-plane: controller-manager
-  name: kubedr-controller-manager-metrics-monitor
-  namespace: kubedr-system
-spec:
-  endpoints:
-  - path: /metrics
-    port: https
-  selector:
-    control-plane: controller-manager
 ---
 apiVersion: admissionregistration.k8s.io/v1beta1
 kind: ValidatingWebhookConfiguration

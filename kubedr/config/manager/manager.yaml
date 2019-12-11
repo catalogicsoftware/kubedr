@@ -29,6 +29,9 @@ spec:
         - --enable-leader-election
         image: controller:latest
         name: manager
+        env:
+        - name: KUBEDR_UTIL_IMAGE
+          value: docker-registry.devad.catalogic.us:5000/kubedrutil:0.42
         resources:
           limits:
             cpu: 100m
