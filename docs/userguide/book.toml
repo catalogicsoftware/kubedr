@@ -1,0 +1,7 @@
+[book]
+title = "KubeDR User Guide"
+author = "Catalogic Software"
+description = "The book contains details about using KubeDR."
+
+[build]
+create-missing = false
