@@ -10,7 +10,7 @@ spec:
   containers:
   - name: test
     image: busybox
-    command: 
+    command:
     - sleep
     - "3600"
     env:
