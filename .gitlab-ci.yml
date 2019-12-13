@@ -1,0 +1,32 @@
+image: alpine:3.10
+
+stages:
+  - lint
+
+# Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
+yaml_lint:
+  stage: lint
+  image: sdesbure/yamllint
+  script:
+    - yamllint .
+
+md_lint:
+  stage: lint
+  image: cytopia/awesome-ci
+  script:
+    - syntax-markdown --text --extension='.md' --path=./
+
+sh_lint:
+  stage: lint
+  image: cytopia/awesome-ci
+  script:
+    - syntax-sh --text --path=./scripts
+
+go_lint:
+  stage: lint
+  image: golangci/golangci-lint:v1.20.1-alpine
+  before_script:
+    - golangci-lint help linters
+  script:
+    - cd kubedr
+    - golangci-lint run ./...

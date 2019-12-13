@@ -16,86 +16,75 @@ spec:
       operator: Exists
 
   volumes:
-  - name: target-dir
-    emptyDir: {}
+    - name: target-dir
+      emptyDir: {}
 
-  - name: certs-dir
-    hostPath:
-      path: /var/lib/minikube/certs
-      type: Directory
+    - name: certs-dir
+      hostPath:
+        path: /var/lib/minikube/certs
+        type: Directory
 
   initContainers:
-  - name: etcd-snapshot
-    image: k8s.gcr.io/etcd:3.3.15-0
+    - name: etcd-snapshot
+      image: k8s.gcr.io/etcd:3.3.15-0
 
-    volumeMounts:
-    - name: target-dir
-      mountPath: /data
-    - name: certs-dir
-      mountPath: /certs_dir
+      env:
+        - name: ETCDCTL_API
+          value: "3"
 
-    env:
-    - name: ETCDCTL_API
-      value: "3"
+      command: ["etcdctl"]
+      args:
+        - --endpoints=https://127.0.0.1:2379
+        - --cacert=/certs_dir/etcd/ca.crt
+        - --cert=/certs_dir/apiserver-etcd-client.crt
+        - --key=/certs_dir/apiserver-etcd-client.key
+        - --debug
+        - snapshot
+        - save
+        - /data/etcd-snapshot.db
 
-    command: ["etcdctl"]
-    args: 
-    - --endpoints=https://127.0.0.1:2379
-    - --cacert=/certs_dir/etcd/ca.crt 
-    - --cert=/certs_dir/apiserver-etcd-client.crt
-    - --key=/certs_dir/apiserver-etcd-client.key
-    - --debug
-    - snapshot 
-    - save 
-    - /data/etcd-snapshot.db
+    - name: certificates-copy
+      image: busybox
 
-  - name: certificates-copy
-    image: busybox
+      volumeMounts:
+        - name: target-dir
+          mountPath: /data
+        - name: certs-dir
+          mountPath: /certs_dir
 
-    volumeMounts:
-    - name: target-dir
-      mountPath: /data
-    - name: certs-dir
-      mountPath: /certs_dir
-
-    command: ["/bin/sh"]
-    args: 
-    - -c
-    - "mkdir -p /data/certificates && cp -R /certs_dir/* /data/certificates"
+      command: ["/bin/sh"]
+      args:
+        - -c
+        - "mkdir -p /data/certificates && cp -R /certs_dir/* /data/certificates"
 
   containers:
-  - name: kcx-backup
-    image: restic/restic
+    - name: kcx-backup
+      image: restic/restic
 
-    volumeMounts:
-    - name: target-dir
-      mountPath: /data
+      volumeMounts:
+        - name: target-dir
+          mountPath: /data
 
-    env:
-    - name: MINIO_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: access_key
-    - name: MINIO_SECRET_KEY
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: secret_key
-    - name: RESTIC_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: minio-creds
-          key: restic_repo_password
+      env:
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-creds
+              key: access_key
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: minio-creds
+              key: secret_key
+        - name: RESTIC_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: minio-creds
+              key: restic_repo_password
 
-    volumeMounts:
-    - name: target-dir
-      mountPath: /data
-
-    args:
-    - -r
-    - s3:http://10.107.63.254:9000/testbucket
-    - --verbose
-    - backup
-    - /data
-
+      args:
+        - -r
+        - s3:http://10.107.63.254:9000/testbucket
+        - --verbose
+        - backup
+        - /data
