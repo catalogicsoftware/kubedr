@@ -518,7 +518,7 @@ spec:
         env:
         - name: KUBEDR_UTIL_IMAGE
           value: docker-registry.devad.catalogic.us:5000/kubedrutil:0.42
-        image: docker-registry.devad.catalogic.us:5000/kubedr:0.42
+        image: docker-registry.devad.catalogic.us:5000/kubedr:0.44
         name: manager
         ports:
         - containerPort: 9443

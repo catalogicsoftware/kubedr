@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: docker-registry.devad.catalogic.us:5000/kubedr
-  newTag: "0.42"
+  newTag: "0.44"

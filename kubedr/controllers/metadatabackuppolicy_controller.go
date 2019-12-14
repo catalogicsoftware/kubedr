@@ -263,6 +263,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 		log.Error(err, "")
 		return nil, err
 	}
+	log.V(1).Info(fmt.Sprintf("kubedrUtilImage: %s", kubedrUtilImage))
 
 	backupLocation := &kubedrv1alpha1.BackupLocation{}
 	backupLocKey := types.NamespacedName{Namespace: namespace, Name: cr.Spec.Destination}
