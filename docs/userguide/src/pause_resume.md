@@ -26,9 +26,10 @@ $ kubectl -n kubedr-system patch \
 ```
 
 You can verify that the backups are indeed suspended by checking the
-cronjob resource with `kubectl -n kubedr-system get cronjobs`:
+cronjob resource as follows:
 
-```
+```bash
+$ kubectl -n kubedr-system get cronjobs
 NAME                             SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 test-backup-new-backup-cronjob   */2 * * * *   False     0        5m59s           13m
 ```
