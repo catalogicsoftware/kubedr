@@ -243,8 +243,8 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 	}
 
 	if len(val) == 0 {
-		log.Error(errors.New(fmt.Sprintf("Invalid value for master node label name in config map (%s)", policy.Spec.Options)),
-		"")
+		log.Error(fmt.Errorf("Invalid value for master node label name in config map (%s)",
+			policy.Spec.Options), "")
 		return labelName;
 	}
 
@@ -259,7 +259,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 	kubedrUtilImage := os.Getenv("KUBEDR_UTIL_IMAGE")
 	if kubedrUtilImage == "" {
 		// This should really not happen.
-		err := errors.New("KUBEDR_UTIL_IMAGE is not set")
+		err := fmt.Errorf("KUBEDR_UTIL_IMAGE is not set")
 		log.Error(err, "")
 		return nil, err
 	}
