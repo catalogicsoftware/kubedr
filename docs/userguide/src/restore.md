@@ -3,17 +3,17 @@
 The main restore use case is in a DR scenario when the master nodes
 are lost and you are setting up a new cluster. In this case, first
 browse backups on the target and then pick a snapshot to restore
-from. 
+from.
 
 To browse backups (replace access key, secret key, and restic password
 values with the ones you used while creating `BackupLocation`
-resource): 
+resource):
 
 ```bash
 $ docker run --rm -it -e AWS_ACCESS_KEY_ID=<ACCESS_KEY> \
         -e AWS_SECRET_ACCESS_KEY=<SECRET_KEY> \
         -e RESTIC_PASSWORD=<REPO_PASSWORD> \
-        restic/restic 
+        restic/restic \
         -r s3:<S3-END-POINT>/<BUCKET-NAME> snapshots
 ```
 
@@ -25,7 +25,7 @@ $ docker run --rm -it -e AWS_ACCESS_KEY_ID=<ACCESS_KEY> \
         -e RESTIC_PASSWORD=<REPO_PASSWORD> \
         restic/restic \
         -r s3:<S3-END-POINT>/<BUCKET-NAME> restore <SNAPSHOT-ID> \
-        --target <TARGET_DIR> 
+        --target <TARGET_DIR>
 ```
 
 Once restore is done, etcd snapshot file and (optionally) certificates
