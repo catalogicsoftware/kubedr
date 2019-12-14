@@ -1,5 +1,6 @@
-
 # Kubernetes Metadata Backup
+
+[![pipeline status](https://gitlab.ad.catalogic.us/kubernetes/kcx/badges/master/pipeline.svg)](https://gitlab.ad.catalogic.us/kubernetes/kcx/commits/master)
 
 ## Introduction
 
