@@ -24,8 +24,8 @@ $ docker run --rm -it -e AWS_ACCESS_KEY_ID=<ACCESS_KEY> \
         -e AWS_SECRET_ACCESS_KEY=<SECRET_KEY> \
         -e RESTIC_PASSWORD=<REPO_PASSWORD> \
         restic/restic \
-        -r s3:<S3-END-POINT>/<BUCKET-NAME> restore <SNAPSHOT-ID> \
-        --target <TARGET_DIR>
+        --target <TARGET_DIR> \
+        -r s3:<S3-END-POINT>/<BUCKET-NAME> restore <SNAPSHOT-ID>
 ```
 
 Once restore is done, etcd snapshot file and (optionally) certificates
