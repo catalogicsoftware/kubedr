@@ -13,5 +13,5 @@ as well as to set defaults when some fields are not provided in the
 input. Our operator uses webhooks for both these purposes.
 
 For data transfer to S3, we currently use a tool called
-[restic](https://restic.net) but we will be able to change specific
+[restic](https://restic.net) but we will be able to change the specific
 backup tool in a backwards compatible manner.
