@@ -44,17 +44,43 @@ spelling_lint:
   script:
     - find . -type f -name '*.md' | xargs misspell -error
 
-mdbook_build:
+userguide:
   stage: build
   image: rust:1.39
   variables:
     CARGO_HOME: $CI_PROJECT_DIR/.cargo
+    MDBOOK_NAME: userguide
     MDBOOK_PATH_BASE: /distribution/devops
     MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/userguide
   before_script:
     - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
   script:
-    - cd docs/userguide
+    - cd docs/$MDBOOK_NAME
+    - $CARGO_HOME/bin/mdbook build
+    - rm -rf $MDBOOK_PATH_FULL/*
+    - mkdir -p $MDBOOK_PATH_FULL
+    - cp -rf book/* $MDBOOK_PATH_FULL/
+  cache:
+    paths:
+      - .cargo
+  only:
+    refs:
+      - master
+    changes:
+      - docs/**/*
+
+devguide:
+  stage: build
+  image: rust:1.39
+  variables:
+    CARGO_HOME: $CI_PROJECT_DIR/.cargo
+    MDBOOK_NAME: devguide
+    MDBOOK_PATH_BASE: /distribution/devops
+    MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$MDBOOK_NAME
+  before_script:
+    - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
+  script:
+    - cd docs/$MDBOOK_NAME
     - $CARGO_HOME/bin/mdbook build
     - rm -rf $MDBOOK_PATH_FULL/*
     - mkdir -p $MDBOOK_PATH_FULL

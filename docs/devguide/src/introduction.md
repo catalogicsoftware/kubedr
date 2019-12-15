@@ -1,4 +1,3 @@
-
 ## Introduction
 
 This project, code named *Kubedr*, is about protecting metadata of
