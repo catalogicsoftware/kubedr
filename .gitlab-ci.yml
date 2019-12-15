@@ -51,7 +51,7 @@ userguide:
     CARGO_HOME: $CI_PROJECT_DIR/.cargo
     MDBOOK_NAME: userguide
     MDBOOK_PATH_BASE: /distribution/devops
-    MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/userguide
+    MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$MDBOOK_NAME
   before_script:
     - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
   script:
