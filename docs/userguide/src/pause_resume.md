@@ -16,7 +16,7 @@ spec:
   suspend: true
 ```
 
-Replace "<NAME>" in the following command with the name of the policy
+Replace `<NAME>` in the following command with the name of the policy
 resource and then run it:
 
 ```bash
@@ -31,7 +31,7 @@ cronjob resource as follows:
 ```bash
 $ kubectl -n kubedr-system get cronjobs
 NAME                             SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
-test-backup-new-backup-cronjob   */2 * * * *   False     0        5m59s           13m
+test-backup-new-backup-cronjob   */2 * * * *   True     0        5m59s           13m
 ```
 
 To resume backups, follow the same procedure as above but this time,
