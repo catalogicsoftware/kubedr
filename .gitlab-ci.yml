@@ -67,7 +67,7 @@ userguide:
     refs:
       - master
     changes:
-      - docs/**/*
+      - docs/userguide/**/*
 
 devguide:
   stage: build
@@ -92,4 +92,4 @@ devguide:
     refs:
       - master
     changes:
-      - docs/**/*
+      - docs/devguide/**/*
