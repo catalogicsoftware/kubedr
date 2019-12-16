@@ -8,8 +8,7 @@ To uninstall:
 - delete CRDs
 
 It is important to follow the order of deletions as otherwise,
-deletion of namespace may hang. Here are the commands to perform these
-deletions:
+deletion of namespace may hang. Here are the commands to uninstall:
 
 
 ```bash
