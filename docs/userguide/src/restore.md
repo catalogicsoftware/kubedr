@@ -17,20 +17,23 @@ $ docker run --rm -it -e AWS_ACCESS_KEY_ID=<ACCESS_KEY> \
         -r s3:<S3-END-POINT>/<BUCKET-NAME> snapshots
 ```
 
-To restore from a backup snapshot:
+To restore data from a snapshot into the directory `/tmp/restore`:
 
 ```bash
 $ docker run --rm -it -e AWS_ACCESS_KEY_ID=<ACCESS_KEY> \
         -e AWS_SECRET_ACCESS_KEY=<SECRET_KEY> \
         -e RESTIC_PASSWORD=<REPO_PASSWORD> \
+        -v /tmp/restore:/tmp/restore \
         restic/restic \
         --target <TARGET_DIR> \
         -r s3:<S3-END-POINT>/<BUCKET-NAME> restore <SNAPSHOT-ID>
 ```
 
+**NOTE: You must mount the target dir using -v option.**
+
 Once restore is done, etcd snapshot file and (optionally) certificates
-will be available in <TARGET_DIR>. One can then configure etcd server
-to recover data from the snapshot. For more details, see
+will be available in `/tmp/restore/data`. One can then configure etcd
+server to recover data from the snapshot. For more details, see
 [Restoring etcd
 cluster](https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/recovery.md#restoring-a-cluster)
 and docs for your cluster distro.
