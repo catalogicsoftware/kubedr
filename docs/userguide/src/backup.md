@@ -20,7 +20,7 @@
   and create the secret as follows:
 
   ```bash
-  $ kubectl -n kubedr-system create secret generic etcd-creds
+  $ kubectl -n kubedr-system create secret generic etcd-creds \ 
           --from-file=ca.crt --from-file=client.crt --from-file=client.key
   ```
 
