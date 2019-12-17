@@ -8,7 +8,7 @@ metadata:
   namespace: system
 spec:
   endpoints:
-    - path: /metrics
-      port: https
+  - path: /metrics
+    port: https
   selector:
     control-plane: controller-manager

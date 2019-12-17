@@ -1,17 +1,17 @@
 stages:
-  - lint
-  - build
+- lint
+- build
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
 yaml_lint:
   stage: lint
   image: sdesbure/yamllint
   script:
-    - yamllint .
+  - yamllint .
   only:
     changes:
-      - "**/*.yml"
-      - "**/*.yaml"
+    - "**/*.yml"
+    - "**/*.yaml"
 
 md_lint:
   stage: lint
@@ -27,35 +27,35 @@ md_spelling_lint:
   stage: lint
   image: alpine:3.10
   before_script:
-    - apk add --no-cache curl
-    - curl -L -o ./install-misspell.sh https://git.io/misspell
-    - sh ./install-misspell.sh -b /usr/local/bin
+  - apk add --no-cache curl
+  - curl -L -o ./install-misspell.sh https://git.io/misspell
+  - sh ./install-misspell.sh -b /usr/local/bin
   script:
-    - find . -type f -name '*.md' | xargs misspell -error
+  - find . -type f -name '*.md' | xargs misspell -error
   only:
     changes:
-      - "**/*.md"
+    - "**/*.md"
 
 sh_lint:
   stage: lint
   image: cytopia/awesome-ci
   script:
-    - syntax-sh --text --path=./scripts
+  - syntax-sh --text --path=./scripts
   only:
     changes:
-      - scripts/**/*
+    - scripts/**/*
 
 go_lint:
   stage: lint
   image: golangci/golangci-lint:v1.20.1-alpine
   before_script:
-    - golangci-lint help linters
+  - golangci-lint help linters
   script:
-    - cd kubedr
-    - golangci-lint run ./...
+  - cd kubedr
+  - golangci-lint run ./...
   only:
     changes:
-      - "kubedr/**/*.go"
+    - "kubedr/**/*.go"
 
 userguide:
   stage: build
@@ -66,21 +66,21 @@ userguide:
     MDBOOK_PATH_BASE: /distribution/devops
     MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$MDBOOK_NAME
   before_script:
-    - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
+  - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
   script:
-    - cd docs/$MDBOOK_NAME
-    - $CARGO_HOME/bin/mdbook build
-    - rm -rf $MDBOOK_PATH_FULL/*
-    - mkdir -p $MDBOOK_PATH_FULL
-    - cp -rf book/* $MDBOOK_PATH_FULL/
+  - cd docs/$MDBOOK_NAME
+  - $CARGO_HOME/bin/mdbook build
+  - rm -rf $MDBOOK_PATH_FULL/*
+  - mkdir -p $MDBOOK_PATH_FULL
+  - cp -rf book/* $MDBOOK_PATH_FULL/
   cache:
     paths:
-      - .cargo
+    - .cargo
   only:
     refs:
-      - master
+    - master
     changes:
-      - docs/userguide/**/*
+    - docs/userguide/**/*
 
 devguide:
   stage: build
@@ -91,18 +91,18 @@ devguide:
     MDBOOK_PATH_BASE: /distribution/devops
     MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$MDBOOK_NAME
   before_script:
-    - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
+  - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
   script:
-    - cd docs/$MDBOOK_NAME
-    - $CARGO_HOME/bin/mdbook build
-    - rm -rf $MDBOOK_PATH_FULL/*
-    - mkdir -p $MDBOOK_PATH_FULL
-    - cp -rf book/* $MDBOOK_PATH_FULL/
+  - cd docs/$MDBOOK_NAME
+  - $CARGO_HOME/bin/mdbook build
+  - rm -rf $MDBOOK_PATH_FULL/*
+  - mkdir -p $MDBOOK_PATH_FULL
+  - cp -rf book/* $MDBOOK_PATH_FULL/
   cache:
     paths:
-      - .cargo
+    - .cargo
   only:
     refs:
-      - master
+    - master
     changes:
-      - docs/devguide/**/*
+    - docs/devguide/**/*
