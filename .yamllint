@@ -1,16 +1,12 @@
+# Matches gopkg.in/yaml.v2 K8S YAML standard
+
 extends: default
 
 rules:
-  braces:
-    min-spaces-inside: 0
-    max-spaces-inside: 1
-  brackets:
-    min-spaces-inside: 0
-    max-spaces-inside: 1
+  document-start:
+    present: false
   indentation:
-    spaces: 2
-    indent-sequences: consistent
-  document-start: disable
-  line-length: disable
-  new-line-at-end-of-file: disable
-  truthy: disable
+    indent-sequences: false
+  line-length:
+    level: warning
+    max: 120
