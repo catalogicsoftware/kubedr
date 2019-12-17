@@ -17,10 +17,10 @@ md_lint:
   stage: lint
   image: cytopia/awesome-ci
   script:
-    - syntax-markdown --text --extension='.md' --path=./
+  - syntax-markdown --text --extension='.md' --path=./
   only:
     changes:
-      - "**/*.md"
+    - "**/*.md"
 
 # TODO: convert misspell to packaged image in kcx-misc
 md_spelling_lint:
