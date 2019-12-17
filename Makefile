@@ -15,4 +15,3 @@ build:
 pushimage:
 	docker push $(KUBEDR_FULL_IMAGE_NAME)
 	docker push $(KUBEDRUTIL_FULL_IMAGE_NAME)
-
