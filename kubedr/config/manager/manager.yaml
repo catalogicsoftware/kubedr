@@ -30,8 +30,8 @@ spec:
         image: controller:latest
         name: manager
         env:
-        - name: KUBEDR_UTIL_IMAGE
-          value: docker-registry.devad.catalogic.us:5000/kubedrutil:0.42
+        - name: KUBEDRUTIL_IMAGE_NAME_SHORT
+          value: KUBEDRUTIL_IMAGE_NAME_LONG:KUBEDRUTIL_IMAGE_TAG
         resources:
           limits:
             cpu: 100m

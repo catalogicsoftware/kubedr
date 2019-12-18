@@ -3,3 +3,4 @@
 
 __pycache__/
 test-results.xml
+.vscode/**

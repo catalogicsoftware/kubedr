@@ -1,6 +1,25 @@
 stages:
 - lint
-- build
+- docs_build
+- docker_build
+- docker_push
+- go_build
+
+# YAML Job Template Configurations
+.dnd_template:
+  image: docker:19.03
+  services:
+  - name: docker:19.03-dind
+    command: ["--insecure-registry=docker-registry.devad.catalogic.us:5000"]
+  before_script:
+  - docker info
+  - apk add --no-cache make
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_REGISTRY: docker-registry.devad.catalogic.us:5000
+    DOCKER_OPTS: "--insecure-registry='docker-registry.devad.catalogic.us:5000'"
+    DOCKER_DRIVER: overlay2
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
 yaml_lint:
@@ -58,7 +77,7 @@ go_lint:
     - "kubedr/**/*.go"
 
 userguide:
-  stage: build
+  stage: docs_build
   image: rust:1.39
   variables:
     CARGO_HOME: $CI_PROJECT_DIR/.cargo
@@ -79,11 +98,12 @@ userguide:
   only:
     refs:
     - master
+    - merge_requests
     changes:
     - docs/userguide/**/*
 
 devguide:
-  stage: build
+  stage: docs_build
   image: rust:1.39
   variables:
     CARGO_HOME: $CI_PROJECT_DIR/.cargo
@@ -104,5 +124,52 @@ devguide:
   only:
     refs:
     - master
+    - merge_requests
     changes:
     - docs/devguide/**/*
+
+kubedr_image:
+  extends: .dnd_template
+  stage: docker_build
+  script:
+  - make docker_build
+  only:
+    refs:
+    - master
+    - merge_requests
+
+kubedr_latest:
+  extends: .dnd_template
+  stage: docker_push
+  variables:
+    GIT_STRATEGY: none
+  script:
+  - make docker_push_latest
+  only:
+    refs:
+    - master
+    - merge_requests
+
+kubedr_tags:
+  extends: .dnd_template
+  stage: docker_push
+  variables:
+    GIT_STRATEGY: none
+  script:
+  - make docker_push_latest
+  only:
+    refs:
+    - tags
+
+kubedr_go:
+  image: docker-registry.devad.catalogic.us:5000/go-kustomize:latest
+  stage: go_build
+  script:
+  - make go_build
+  artifacts:
+    paths:
+    - kubedr/kubedr.yaml
+  only:
+    refs:
+    - master
+    - merge_requests

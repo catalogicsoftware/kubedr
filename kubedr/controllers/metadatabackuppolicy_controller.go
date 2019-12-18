@@ -17,7 +17,6 @@ package controllers
 
 import (
 	"context"
-//	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -81,7 +80,7 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 
             // remove our finalizer from the list and update it.
             policy.ObjectMeta.Finalizers = removeString(policy.ObjectMeta.Finalizers, finalizer)
- 
+
 			if err := r.Update(context.Background(), &policy); err != nil {
                 return ctrl.Result{}, err
             }
@@ -100,12 +99,12 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 
 	// I have seen Get return "not found" and then the following
 	// create fail with "already exists" error.
-	
+
 	if err := r.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: cronJobName}, &cronJob); err != nil {
 		if !apierrors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
-			
+
 		// Cronjob doesn't exist, create one and return.
 		backupCronjob, err := r.buildBackupCronjob(&policy, req.Namespace, cronJobName, log)
 		if err != nil {
@@ -127,7 +126,7 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		}
 
 		if err == nil {
-			// We have seen a second reconcile request immediately after return from 
+			// We have seen a second reconcile request immediately after return from
 			// here and add to it the fact that Get() is failing with "not found" errors
 			// even though the resource has just been created (Get reads from local cache).
 			// So make sure cache is updated before returning from here.
@@ -195,7 +194,7 @@ func removeString(slice []string, s string) (result []string) {
 
 func (r *MetadataBackupPolicyReconciler) waitForCreatedResource(namespace string, name string) {
 	var cronJob batchv1beta1.CronJob
-	
+
 	for i := 0; i < 5; i++ {
 		err := r.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: name}, &cronJob)
 		if err == nil {
@@ -206,7 +205,7 @@ func (r *MetadataBackupPolicyReconciler) waitForCreatedResource(namespace string
 	}
 }
 
-func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1alpha1.MetadataBackupPolicy, 
+func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1alpha1.MetadataBackupPolicy,
 	log logr.Logger) string {
 
 	labelName := "node-role.kubernetes.io/master"
@@ -253,7 +252,7 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 	return val
 }
 
-func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.MetadataBackupPolicy, 
+func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.MetadataBackupPolicy,
 	namespace string, cronJobName string, log logr.Logger) (*batchv1beta1.CronJob, error) {
 
 	kubedrUtilImage := os.Getenv("KUBEDR_UTIL_IMAGE")
@@ -366,7 +365,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 			Path: cr.Spec.CertsDir,
 			Type: &t,
 		}
-		
+
 		volumes = append(volumes, certsDirVolume)
 		volumeMounts = append(volumeMounts, corev1.VolumeMount {Name: "certs-dir", MountPath: "/certs_dir"})
 
@@ -431,9 +430,9 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 									Effect: "NoSchedule",
 								},
 							},
-							
+
 							Volumes: volumes,
-							
+
 							Containers: []corev1.Container {
 								{
 									Name: cr.Name + "-kcx-backup",
