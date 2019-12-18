@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_PATH=`which $0`
+export TESTS_ROOTDIR=`dirname $SCRIPT_PATH`
+export SRCDIR=$TESTS_ROOTDIR/src
+
+export PYTHONPATH=$TESTS_ROOTDIR:$SRCDIR:$PYTHONPATH
+export DEFAULT_RESULTS_FILE=$TESTS_ROOTDIR/test-results.xml
+
+${PYTEST_BIN:-pytest} --tb=native -v --junit-xml=${PYTESTS_RESULTS_FILE:-$DEFAULT_RESULTS_FILE} "$@"
+
+

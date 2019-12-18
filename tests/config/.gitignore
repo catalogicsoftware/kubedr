@@ -1,0 +1,4 @@
+
+# Contains config information that is specific to this environemnt
+# so it should not be part of git.
+testenv.json

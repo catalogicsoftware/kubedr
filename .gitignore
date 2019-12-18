@@ -1,2 +1,5 @@
 *.html
 *.pdf
+
+__pycache__/
+test-results.xml

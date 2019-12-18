@@ -119,7 +119,7 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 	log.Info("Getting MBR list...")
 	var mbrList kubedrv1alpha1.MetadataBackupRecordList
 	if err := r.List(ctx, &mbrList, client.InNamespace(req.Namespace), 
-		client.MatchingField("policy", record.Spec.Policy)); err != nil {
+		client.MatchingFields{"policy": record.Spec.Policy}); err != nil {
 
 			log.Error(err, "unable to list child Jobs")
 			return ctrl.Result{}, err

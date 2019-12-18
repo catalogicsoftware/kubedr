@@ -147,7 +147,11 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// is not worth it. 
 	// For these same reasons, we will ignore any errors in the following
 	// update.
+	if backupLoc.ObjectMeta.Annotations == nil {
+		backupLoc.ObjectMeta.Annotations = make(map[string]string)
+	}
 	backupLoc.ObjectMeta.Annotations[init_annotation] = "true"
+
 	err = r.Update(context.Background(), &backupLoc)
 	if err != nil {
 		log.Error(err, "Error in updating the init annotation, ignoring...")
@@ -160,10 +164,10 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) (*corev1.Pod, error) {
 	s3EndPoint := "s3:" + cr.Spec.Url + "/" + cr.Spec.BucketName
-	// log.V(1).Info("s3EndPoint", s3EndPoint)
 
 	labels := map[string]string{
-		"app": cr.Name,
+		"kubedr.type": "backuploc-init",
+		"kubedr.backuploc": cr.Name,
 	}
 
 	access_key := corev1.SecretKeySelector{}
