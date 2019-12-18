@@ -21,11 +21,8 @@ class GlobalConfig:
         self.configdir = os.path.join(self.rootdir, "config")
 
         self.testenv = None
-        print("aaa 1")
         testenv_f = os.path.join(self.configdir, "testenv.json")
-        print(testenv_f)
         if os.path.exists(testenv_f):
-            print("aaa 2")
             self.testenv = json.load(open(testenv_f))
 
         self._init_apis()
