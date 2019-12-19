@@ -5,6 +5,15 @@ stages:
 - docker_push
 - go_build
 
+.lint_template:
+  only:
+    refs:
+    - master
+    - merge_requests
+  except:
+    variables:
+    - $SKIP_LINT == "yes"
+
 # YAML Job Template Configurations
 .dnd_template:
   image: docker:19.03
@@ -23,26 +32,22 @@ stages:
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
 yaml_lint:
+  extends: .lint_template
   stage: lint
   image: sdesbure/yamllint
   script:
   - yamllint .
-  only:
-    changes:
-    - "**/*.yml"
-    - "**/*.yaml"
 
 md_lint:
+  extends: .lint_template
   stage: lint
   image: cytopia/awesome-ci
   script:
   - syntax-markdown --text --extension='.md' --path=./
-  only:
-    changes:
-    - "**/*.md"
 
 # TODO: convert misspell to packaged image in kcx-misc
 md_spelling_lint:
+  extends: .lint_template
   stage: lint
   image: alpine:3.10
   before_script:
@@ -51,20 +56,16 @@ md_spelling_lint:
   - sh ./install-misspell.sh -b /usr/local/bin
   script:
   - find . -type f -name '*.md' | xargs misspell -error
-  only:
-    changes:
-    - "**/*.md"
 
 sh_lint:
+  extends: .lint_template
   stage: lint
   image: cytopia/awesome-ci
   script:
   - syntax-sh --text --path=./scripts
-  only:
-    changes:
-    - scripts/**/*
 
 go_lint:
+  extends: .lint_template
   stage: lint
   image: golangci/golangci-lint:v1.20.1-alpine
   before_script:
@@ -72,9 +73,6 @@ go_lint:
   script:
   - cd kubedr
   - golangci-lint run ./...
-  only:
-    changes:
-    - "kubedr/**/*.go"
 
 userguide:
   stage: docs_build
