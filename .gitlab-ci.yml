@@ -26,9 +26,18 @@ stages:
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
-    DOCKER_REGISTRY: docker-registry.devad.catalogic.us:5000
     DOCKER_OPTS: "--insecure-registry='docker-registry.devad.catalogic.us:5000'"
     DOCKER_DRIVER: overlay2
+
+    DOCKER_REGISTRY: docker-registry.devad.catalogic.us:5000
+
+    DOCKER_KUBEDR_IMAGE_NAME_SHORT: kubedr
+    DOCKER_KUBEDR_IMAGE_NAME_LONG: $DOCKER_REGISTRY/$DOCKER_KUBEDR_IMAGE_NAME_SHORT
+    DOCKER_KUBEDR_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  only:
+    refs:
+    - master
+    - merge_requests
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
 yaml_lint:
@@ -131,10 +140,7 @@ kubedr_image:
   stage: docker_build
   script:
   - make docker_build
-  only:
-    refs:
-    - master
-    - merge_requests
+  - docker push $DOCKER_KUBEDR_IMAGE_NAME_LONG:$DOCKER_KUBEDR_IMAGE_TAG
 
 kubedr_latest:
   extends: .dnd_template
@@ -143,10 +149,6 @@ kubedr_latest:
     GIT_STRATEGY: none
   script:
   - make docker_push_latest
-  only:
-    refs:
-    - master
-    - merge_requests
 
 kubedr_tags:
   extends: .dnd_template
@@ -167,7 +169,3 @@ kubedr_go:
   artifacts:
     paths:
     - kubedr/kubedr.yaml
-  only:
-    refs:
-    - master
-    - merge_requests
