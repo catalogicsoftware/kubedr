@@ -82,6 +82,12 @@ go_lint:
   script:
   - cd kubedr
   - golangci-lint run ./...
+  only:
+    refs:
+    - master
+    - merge_requests
+    changes:
+    - kubedr/**/*
 
 userguide:
   stage: docs_build
@@ -169,3 +175,7 @@ kubedr_go:
   artifacts:
     paths:
     - kubedr/kubedr.yaml
+  only:
+    refs:
+    - master
+    - merge_requests

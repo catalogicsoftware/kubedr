@@ -2,7 +2,7 @@ DOCKER_REGISTRY ?= docker-registry.devad.catalogic.us:5000
 
 DOCKER_DIR_BASE = kubedr
 
-DOCKER_KUBEDR_IMAGE_TAG ?= latest
+DOCKER_KUBEDR_IMAGE_TAG ?= dev
 DOCKER_KUBEDR_IMAGE_NAME_SHORT = kubedr
 DOCKER_KUBEDR_IMAGE_NAME_LONG = ${DOCKER_REGISTRY}/${DOCKER_KUBEDR_IMAGE_NAME_SHORT}
 
@@ -12,16 +12,11 @@ DOCKER_KUBEDRUTIL_IMAGE_NAME_LONG = ${DOCKER_REGISTRY}/${DOCKER_KUBEDRUTIL_IMAGE
 
 build: docker_build go_build
 
-# make >= 3.8.2
-# Add special target to have make invoke one instance of shell, regardless of lines
-.ONESHELL:
 docker_build:
-	cd ${DOCKER_DIR_BASE}
-	docker pull ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:latest || true
-	docker build \
-		--cache-from ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:latest \
-		--tag ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG} \
-		.
+	cd ${DOCKER_DIR_BASE} && \
+		docker build \
+			--tag ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG} \
+			.
 
 docker_push_latest:
 	docker pull ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG} || true
@@ -41,7 +36,6 @@ go_build:
 	sed -i 's#DOCKER_KUBEDRUTIL_IMAGE_NAME_SHORT#${DOCKER_KUBEDRUTIL_IMAGE_NAME_SHORT}#' kubedr/config/manager/manager.yaml
 	sed -i 's#DOCKER_KUBEDRUTIL_IMAGE_NAME_LONG#${DOCKER_KUBEDRUTIL_IMAGE_NAME_LONG}#' kubedr/config/manager/manager.yaml
 
-	cd kubedr/config/manager
-	kustomize edit set image controller=${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
-	cd ../../
-	kustomize build config/default > kubedr.yaml
+	cd kubedr/config/manager && \
+		kustomize edit set image controller=${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
+	cd kubedr && kustomize build config/default > kubedr.yaml
