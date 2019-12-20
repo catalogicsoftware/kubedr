@@ -255,6 +255,11 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.MetadataBackupPolicy,
 	namespace string, cronJobName string, log logr.Logger) (*batchv1beta1.CronJob, error) {
 
+	labels := map[string]string{
+		"kubedr.type": "backup",
+		"kubedr.backup-policy": cr.Name,
+	}
+
 	kubedrUtilImage := os.Getenv("KUBEDR_UTIL_IMAGE")
 	if kubedrUtilImage == "" {
 		// This should really not happen.
@@ -381,6 +386,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 		ObjectMeta: metav1.ObjectMeta {
 			Name: cronJobName,
 			Namespace: cr.Namespace,
+			Labels: labels,
 		},
 
 		Spec: batchv1beta1.CronJobSpec {
@@ -399,6 +405,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 						ObjectMeta: metav1.ObjectMeta {
 							Name: cr.Name + "-backup-pod-template",
 							Namespace: cr.Namespace,
+							Labels: labels,
 						},
 						Spec: corev1.PodSpec {
 							RestartPolicy: "Never",

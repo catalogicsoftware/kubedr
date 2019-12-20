@@ -4,5 +4,10 @@
         "access_key": "minio",
         "secret_key": "minio123",
         "restic_password": "testpass"
+    },
+    "etcd_data": {
+        "ca.crt": "/tmp/ca.crt",
+        "client.crt": "/tmp/client.crt",
+        "client.key": "/tmp/client.key"
     }
 }

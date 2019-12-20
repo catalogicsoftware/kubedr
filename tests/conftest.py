@@ -52,6 +52,7 @@ class GlobalConfig:
         self.namespace = "kubedr-system"
         self.pod_api = kubeclient.PodAPI(self.namespace)
         self.backuploc_api = kubeclient.BackupLocationAPI(self.namespace)
+        self.mbp_api = kubeclient.MetadataBackupPolicyAPI(self.namespace)
         self.secret_api = kubeclient.SecretAPI(self.namespace)
 
 # This is being set as a global variable so that library code
