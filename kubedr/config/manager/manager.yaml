@@ -30,8 +30,8 @@ spec:
         image: controller:latest
         name: manager
         env:
-        - name: KUBEDRUTIL_IMAGE_NAME_SHORT
-          value: KUBEDRUTIL_IMAGE_NAME_LONG:KUBEDRUTIL_IMAGE_TAG
+        - name: KUBEDR_UTIL_IMAGE
+          value: <KUBEDR_UTIL_IMAGE_VAL>
         resources:
           limits:
             cpu: 100m
