@@ -5,6 +5,8 @@ import time
 from kubernetes import client
 from kubernetes import config as k8sconfig
 
+import conftest
+
 class KubeResourceAPI:
     def __init__(self, namespace="default"):
         self.namespace = namespace
@@ -92,7 +94,10 @@ def create_backuploc_creds(name, access_key, secret_key, restic_password):
     secret_api = SecretAPI(namespace="kubedr-system")
     secret_api.create(name, creds_data)
 
-def wait_for_pod_to_appear(label_selector, num_attempts=5, interval_secs=3):
+def wait_for_pod_to_appear(label_selector):
+    num_attempts = conftest.envconfig.wait_for_res_to_appear_num_attempts
+    interval_secs = conftest.envconfig.wait_for_res_to_appear_interval_secs
+
     pod_api = PodAPI(namespace="kubedr-system")
 
     for i in range(num_attempts):
@@ -104,7 +109,10 @@ def wait_for_pod_to_appear(label_selector, num_attempts=5, interval_secs=3):
 
     raise Exception("Timed out waiting for pod with label: {}.".format(label_selector))
 
-def wait_for_pod_to_be_done(pod_name, num_attempts=12, interval_secs=5):
+def wait_for_pod_to_be_done(pod_name):
+    num_attempts = conftest.envconfig.wait_for_pod_to_be_done_num_attempts
+    interval_secs = conftest.envconfig.wait_for_pod_to_be_done_interval_secs
+
     pod_api = PodAPI(namespace="kubedr-system")
 
     for i in range(num_attempts):

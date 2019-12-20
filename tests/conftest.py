@@ -2,13 +2,33 @@
 import configparser
 import json
 import os
+import pprint
 
 import pytest
 
 from src.common import kubeclient
 
-class GlobalConfig:
+env_config_data = [
+    ("wait_for_res_to_appear_num_attempts", 15, int),
+    ("wait_for_res_to_appear_interval_secs", 1, int),
+    ("wait_for_pod_to_be_done_num_attempts", 5, int),
+    ("wait_for_pod_to_be_done_interval_secs", 3, int)
+]
+
+# This class encapsulates all the parameters that can be controlled
+# using env variables.
+class EnvConfig:
     def __init__(self):
+        for name, default_val, factory in env_config_data:
+            self._set_env_config(name, default_val, factory)
+
+    def _set_env_config(self, name, default_val, factory):
+        setattr(self, name, factory(os.environ.get(name.upper(), default_val)))
+
+class GlobalConfig:
+    def __init__(self, envconfig):
+        self.envconfig = envconfig
+
         self.rootdir = os.environ['TESTS_ROOTDIR']
 
         iniconfig = configparser.ConfigParser()
@@ -27,14 +47,21 @@ class GlobalConfig:
 
         self._init_apis()
 
+
     def _init_apis(self):
         self.namespace = "kubedr-system"
         self.pod_api = kubeclient.PodAPI(self.namespace)
         self.backuploc_api = kubeclient.BackupLocationAPI(self.namespace)
         self.secret_api = kubeclient.SecretAPI(self.namespace)
 
+# This is being set as a global variable so that library code
+# such as "kubeclient" can easily access the configuration set
+# through env variables.
+envconfig = EnvConfig()
+
 @pytest.fixture(scope = "session")
 def globalconfig():
     kubeclient.init()
+    pprint.pprint(envconfig.__dict__)
+    return GlobalConfig(envconfig)
 
-    return GlobalConfig()
