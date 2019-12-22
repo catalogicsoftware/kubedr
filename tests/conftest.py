@@ -28,6 +28,7 @@ class EnvConfig:
 class GlobalConfig:
     def __init__(self, envconfig):
         self.envconfig = envconfig
+        self.restic_password = "testpass"
 
         self.rootdir = os.environ['TESTS_ROOTDIR']
 

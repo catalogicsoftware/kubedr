@@ -21,7 +21,7 @@ def resources(globalconfig):
 
     backuploc_creds = "{}-{}".format("s3creds", timestamp())
     kubeclient.create_backuploc_creds(backuploc_creds, backuploc["access_key"], backuploc["secret_key"],
-                                      backuploc["restic_password"])
+                                      globalconfig.restic_password)
 
     resdata = {"backuploc_creds": backuploc_creds}
 
