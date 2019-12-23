@@ -12,9 +12,31 @@ stages:
     - merge_requests
   except:
     variables:
-    - $SKIP_LINT == "yes"
+    - $SKIP_LINT == "yes" || $SKIP_DOCS == "true"
 
-# YAML Job Template Configurations
+# Userguide/Devguide Template Configuration
+.docs_template:
+  image: python:3.7-alpine3.10
+  variables:
+    DOCS_PATH_BASE: /distribution/devops
+    DOCS_PATH_FULL: $DOCS_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$DOCS_NAME
+  before_script:
+  - apk add --no-cache make
+  - pip install sphinx sphinx_rtd_theme
+  after_script:
+  - rm -rf $DOCS_PATH_FULL/*
+  - mkdir -p $DOCS_PATH_FULL
+  - cp -rf html/* $DOCS_PATH_FULL/
+  only:
+    refs:
+    - master
+    - merge_requests
+    variables:
+    - $RUN_DOCS == "yes" || $RUN_DOCS == "true"
+    changes:
+    - docs/userguide/**/*
+
+# YAML Job Template Configuration
 .dnd_template:
   image: docker:19.03
   services:
@@ -38,6 +60,10 @@ stages:
     refs:
     - master
     - merge_requests
+  except:
+    changes:
+    - docs/**/*
+    - tests/**/*
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
 yaml_lint:
@@ -54,7 +80,6 @@ md_lint:
   script:
   - syntax-markdown --text --extension='.md' --path=./
 
-# TODO: convert misspell to packaged image in kcx-misc
 md_spelling_lint:
   extends: .lint_template
   stage: lint
@@ -86,60 +111,30 @@ go_lint:
     refs:
     - master
     - merge_requests
-    changes:
-    - kubedr/**/*
 
 userguide:
+  extends: .docs_template
   stage: docs_build
-  image: rust:1.39
   variables:
-    CARGO_HOME: $CI_PROJECT_DIR/.cargo
-    MDBOOK_NAME: userguide
-    MDBOOK_PATH_BASE: /distribution/devops
-    MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$MDBOOK_NAME
-  before_script:
-  - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
+    DOCS_NAME: userguide.new
   script:
-  - cd docs/$MDBOOK_NAME
-  - $CARGO_HOME/bin/mdbook build
-  - rm -rf $MDBOOK_PATH_FULL/*
-  - mkdir -p $MDBOOK_PATH_FULL
-  - cp -rf book/* $MDBOOK_PATH_FULL/
-  cache:
+  - cd docs/$DOCS_NAME
+  - make html
+  artifacts:
     paths:
-    - .cargo
-  only:
-    refs:
-    - master
-    - merge_requests
-    changes:
-    - docs/userguide/**/*
+    - docs/userguide/html
 
 devguide:
+  extends: .docs_template
   stage: docs_build
-  image: rust:1.39
   variables:
-    CARGO_HOME: $CI_PROJECT_DIR/.cargo
-    MDBOOK_NAME: devguide
-    MDBOOK_PATH_BASE: /distribution/devops
-    MDBOOK_PATH_FULL: $MDBOOK_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$MDBOOK_NAME
-  before_script:
-  - cargo install mdbook --force --no-default-features --features output --vers "^0.1.0"
+    DOCS_NAME: devguide.new
   script:
-  - cd docs/$MDBOOK_NAME
-  - $CARGO_HOME/bin/mdbook build
-  - rm -rf $MDBOOK_PATH_FULL/*
-  - mkdir -p $MDBOOK_PATH_FULL
-  - cp -rf book/* $MDBOOK_PATH_FULL/
-  cache:
+  - cd docs/$DOCS_NAME
+  - make html
+  artifacts:
     paths:
-    - .cargo
-  only:
-    refs:
-    - master
-    - merge_requests
-    changes:
-    - docs/devguide/**/*
+    - docs/devguide/html
 
 kubedr_image:
   extends: .dnd_template
@@ -179,3 +174,7 @@ kubedr_go:
     refs:
     - master
     - merge_requests
+  except:
+    changes:
+    - docs/**/*
+    - tests/**/*
