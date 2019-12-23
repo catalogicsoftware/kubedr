@@ -11,11 +11,11 @@ An operator is basically a combination of *custom resources (CRs)*
 coupled with *controllers* that manage the CRs. There would be one
 controller for each CR. In addition to controllers, operators can also
 contain *webhooks* that can be used to validate the data in resources
-as well as to set defaults when some fields are not provided in the
-input. Our operator uses webhooks for both these purposes.
+as well as to set defaults when some fields are not set in the
+resource specs. Our operator uses webhooks for both these purposes.
 
-For data transfer to S3, we currently use a tool called `restic`_ but
-we will be able to change the specific backup tool in a backwards
-compatible manner.
+For data transfer to S3, we currently use a tool called `restic`_. In
+the future, it will be possible to change the specific backup tool in
+a backwards compatible manner.
 
 .. _restic: https://restic.net

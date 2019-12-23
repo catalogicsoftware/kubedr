@@ -2,37 +2,50 @@
  Installation
 ==============
 
-- Install `cert-manager`_. This is required for webhooks to work.
+- Install `cert-manager`_.
 
-- Make sure that ``kubectl`` is set up to access your cluster and
-  apply ``kubedr/kubedr.yaml`` (available at the root of this repo)
-  by running the following command:
+- Make sure that ``kubectl`` is set up to access your cluster.
+
+- Download the YAML file containing all of *Kubedr's* resource
+  definitions. It can be downloaded by using "Download artifacts" link
+  of "kcx repo" on gitlab. Choose "kubedr_go" in the dropdown list of
+  artifacts. 
+
+  .. note:: 
+
+    For now, *Kubedr* is only accessible internally, hence the
+    instructions to download from in-house "gitlab". Once we make
+    a decision on release mechanism, the instructions will accordingly
+    change. 
+
+  .. note::
+
+    We are also working on supporting *Helm* installs in the future.
+
+- Apply the downloaded ``kubedr.yaml``, like so:
 
   .. code-block:: bash
 
     $ kubectl apply -f kubedr.yaml
 
-  For now, use the file *kubedr.yaml* directly from the master
-  branch. Soon, we will create a "release" version of it.
+  Note that the following two images are required for *Kubedr*  to
+  work.
 
-  Running this command will create a new namespace called
+  * docker-registry.devad.catalogic.us:5000/kubedrutil:0.0.2
+  * docker-registry.devad.catalogic.us:5000/kubedr:dev
+
+  Currently, these images are available only from internal Catalogic
+  repo. But they will be moved to an external repo once we decide on a
+  release mechanism.
+
+- Applying ``kubedr.yaml`` will create a new namespace called
   *kubedr-system* and starts all the necessary pods, services,
   webhooks, and deployments in that namespace. It also installs the
-  following *Custom Resource Definitions (CRDs)*:
+  following *Custom Resource Definitions (CRDs)*: 
 
   * BackupLocation
   * MetadataBackupPolicy
   * MetadataBackupRecord
-
-- Note that the following two images are required for *Kubedr*  to
-  work. They are:
-
-  * docker-registry.devad.catalogic.us:5000/kubedr:0.42
-  * docker-registry.devad.catalogic.us:5000/kubedrutil:0.42
-
-  Currently, these images are available only from internal Catalogic
-  repo. But they will be moved to an external repo soon (private or
-  otherwise).
 
 - To verify that installation is successful, run the following command
   and ensure that all the resources are in running state.

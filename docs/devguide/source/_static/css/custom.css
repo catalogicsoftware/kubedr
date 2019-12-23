@@ -1,0 +1,6 @@
+
+/* Excluding table of contents is not working */
+/* li:not('.toctree-l1') */
+li {
+    margin-bottom: .3em;
+}

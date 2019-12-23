@@ -33,6 +33,9 @@ deletion of namespace may hang. Here are the commands to uninstall:
 If you don't need the backups any more, go ahead and delete the
 bucket on S3.
 
-In the future, we will provide a simpler way of uninstalling by way of
-a wrapper script or by some other means.
+  .. note::
+
+     In the future, you will be able to install and uninstall using
+     *Helm*. 
+
 

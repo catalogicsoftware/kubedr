@@ -46,7 +46,8 @@ bucketName
     Name of the S3 bucket. It will be created if it doesn't exist.
 
 credentials
-    Name of the Kubernetes "secret" resource containing credentials.
+    Name of the Kubernetes "secret" resource containing S3
+    credentials.
 
     The secret should contain three pieces of information. Here is the
     description of each item in the secret and the key with which they
@@ -68,7 +69,7 @@ credentials
           --from-file=access_key --from-file=secret_key \
           --from-file restic_repo_password 
 
-    Note that the secret should be created in the namespace
+    Note that the secret must be created in the namespace
     *kubedr-system*.
 
 Assuming you defined the ``BackupLocation`` resource in a file called
@@ -79,9 +80,9 @@ Assuming you defined the ``BackupLocation`` resource in a file called
   $ kubectl -n kubedr-system apply -f backuplocation.yaml
 
 At this time, *Kubedr* will initialize a backup repository at the
-configured bucket (creating the bucket if necessary). To verify the
-initialization process, run the following command and ensure that
-status is "Completed".
+configured bucket (creating the bucket if necessary). To verify that
+initialization is successful, run the following command and ensure
+that status is "Completed".
 
 .. code-block:: bash
 

@@ -7,10 +7,7 @@ Welcome to KubeDR User Guide!
 =============================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-.. toctree::
+   :numbered:
    :maxdepth: 2
    :caption: Contents:
 

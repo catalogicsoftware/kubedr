@@ -2,8 +2,7 @@
  Pausing backups
 =================
 
-It is possible to pause backups if there is a need to do so (and
-resume them later).
+*Kubedr* supports pausing and resuming backups. 
 
 To pause a backup, you need to patch the ``MetadataBackupPolicy``
 resource by following standard Kubernetes way of `making partial
@@ -13,6 +12,7 @@ First, create a file called ``suspend.yaml`` (you can choose any name
 you want) with the following contents:
 
 .. code-block:: yaml
+
   spec:
     suspend: true
 
@@ -26,7 +26,7 @@ resource and then run it:
     --patch "$(cat suspend.yaml)" --type merge
 
 You can verify that the backups are indeed suspended by checking the
-cronjob resource as follows:
+cronjob resource as follows ("SUSPEND" column should show "True"):
 
 .. code-block:: bash
 

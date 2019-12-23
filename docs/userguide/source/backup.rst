@@ -52,7 +52,7 @@ resource and the description of each field:
     retainNumBackups: 1
   
 name
-    Logical name of the resource.
+    Name of the policy.
 
 destination
     Name of *BackupLocation* resource where backups should be stored.
@@ -73,9 +73,10 @@ etcdCreds
     there is no need to include this field.
 
 schedule
-    A string in the format of Kubernetes `cronjob`_ resource.
+    A string in the format of Kubernetes `cronjob`_ resources's
+    "schedule" field.
   
-    For example, "*/10 * * * *` results in backups every 10
+    For example, "\*/10 \* \* \* \*` results in backups every 10
     minutes.
 
 retainNumBackups
@@ -94,22 +95,19 @@ master-node-label-name
     some other name (say "ismasternode") is used, it can be set as
     follows: 
 
-    .. code-block:: json
+    .. code-block:: yaml
 
-      options:
-        "master-node-label-name": ismasternode
+       options:
+         "master-node-label-name": ismasternode
 
 Assuming you defined the ``MetadataBackupPolicy`` resource in a file
 called ``policy.yaml``, create the resource by running the command:
 
 .. code-block:: bash
+
   $ kubectl -n kubedr-system apply -f policy.yaml
 
-At this time, *Kubedr* will create a `cronjob`_ resource. It can be
-seen as follows: 
-
-.. code-block:: bash
-  $ kubectl -n kubedr-system get all
+At this time, *Kubedr* will create a `cronjob`_ resource.
 
 .. _cronjob: https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs
 
