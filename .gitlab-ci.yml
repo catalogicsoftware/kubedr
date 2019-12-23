@@ -121,26 +121,26 @@ userguide:
   extends: .docs_template
   stage: docs_build
   variables:
-    DOCS_NAME: userguide.new
+    DOCS_NAME: userguide
   script:
   - cd docs/$DOCS_NAME
   - make html
   artifacts:
     paths:
-    - docs/userguide.new/html
+    - docs/userguide/build/html
     expire_in: 1 week
 
 devguide:
   extends: .docs_template
   stage: docs_build
   variables:
-    DOCS_NAME: devguide.new
+    DOCS_NAME: devguide
   script:
   - cd docs/$DOCS_NAME
   - make html
   artifacts:
     paths:
-    - docs/devguide.new/html
+    - docs/devguide/build/html
     expire_in: 1 week
 
 kubedr_image:
