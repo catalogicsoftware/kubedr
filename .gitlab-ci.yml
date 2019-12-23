@@ -116,6 +116,10 @@ go_lint:
     refs:
     - master
     - merge_requests
+  except:
+    changes:
+    - docs/**/*
+    - tests/**/*
 
 userguide:
   extends: .docs_template
