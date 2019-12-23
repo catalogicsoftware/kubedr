@@ -18,6 +18,8 @@ stages:
 .docs_template:
   image: python:3.7-alpine3.10
   variables:
+    DOCS_PATH_BUILD: build/html
+
     DOCS_PATH_BASE: /distribution/devops
     DOCS_PATH_FULL: $DOCS_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$DOCS_NAME
   before_script:
@@ -26,7 +28,7 @@ stages:
   after_script:
   - rm -rf $DOCS_PATH_FULL/*
   - mkdir -p $DOCS_PATH_FULL
-  - cp -rf html/* $DOCS_PATH_FULL/
+  - cp -rf $DOCS_PATH_BUILD/* $DOCS_PATH_FULL/
   only:
     refs:
     - master
