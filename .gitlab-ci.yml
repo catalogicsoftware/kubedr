@@ -18,7 +18,10 @@ stages:
 .docs_template:
   image: python:3.7-alpine3.10
   variables:
-    DOCS_PATH_BUILD: build/html
+    SPHINXOPTS: ""
+    SPHINXBUILD: sphinx-build
+
+    DOCS_PATH_BUILD: $CI_PROJECT_DIR/docs/$DOCS_NAME/build/html
 
     DOCS_PATH_BASE: /distribution/devops
     DOCS_PATH_FULL: $DOCS_PATH_BASE/$CI_PROJECT_NAME/$CI_COMMIT_REF_NAME/docs/$DOCS_NAME
@@ -124,7 +127,8 @@ userguide:
   - make html
   artifacts:
     paths:
-    - docs/userguide/html
+    - docs/userguide.new/html
+    expire_in: 1 week
 
 devguide:
   extends: .docs_template
@@ -136,7 +140,8 @@ devguide:
   - make html
   artifacts:
     paths:
-    - docs/devguide/html
+    - docs/devguide.new/html
+    expire_in: 1 week
 
 kubedr_image:
   extends: .dnd_template
