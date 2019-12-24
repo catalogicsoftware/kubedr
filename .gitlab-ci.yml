@@ -38,8 +38,6 @@ stages:
     - merge_requests
     variables:
     - $RUN_DOCS == "yes" || $RUN_DOCS == "true"
-    changes:
-    - docs/userguide/**/*
 
 # YAML Job Template Configuration
 .dnd_template:
@@ -133,6 +131,9 @@ userguide:
     paths:
     - docs/userguide/build/html
     expire_in: 1 week
+  only:
+    changes:
+    - docs/userguide/**/*
 
 devguide:
   extends: .docs_template
@@ -146,6 +147,9 @@ devguide:
     paths:
     - docs/devguide/build/html
     expire_in: 1 week
+  only:
+    changes:
+    - docs/devguide/**/*
 
 kubedr_image:
   extends: .dnd_template
