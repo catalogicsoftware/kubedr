@@ -36,8 +36,6 @@ stages:
     refs:
     - master
     - merge_requests
-    variables:
-    - $RUN_DOCS == "yes" || $RUN_DOCS == "true"
 
 # YAML Job Template Configuration
 .dnd_template:
