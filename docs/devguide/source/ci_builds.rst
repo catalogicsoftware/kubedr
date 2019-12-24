@@ -26,12 +26,11 @@ Currently the following triggers a pipeline run:
 References
 =================
 
-Some important documentation pages relating to the CI/CD Pipeline:
+Some important documentation pages relating to GitLab's CI/CD pipeline configuration:
 
-  - For default environment variables accessible in every job - `Predefined environment variables reference`
+  - For default environment variables accessible in every job, see: `Predefined environment variables reference`_
 
-  - For available key/values to define the pipeline in ``gitlab-ci.yml`` - `GitLab CI/CD Pipeline Configuration Reference`
-
+  - For available key/values to define the pipeline in ``gitlab-ci.yml``, see: `GitLab CI/CD Pipeline Configuration Reference`_
 
 
 .. _Predefined environment variables reference https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
