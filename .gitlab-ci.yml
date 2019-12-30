@@ -43,10 +43,6 @@ variables:
   - rm -rf $DOCS_PATH_FULL/*
   - mkdir -p $DOCS_PATH_FULL
   - cp -rf $DOCS_PATH_BUILD/* $DOCS_PATH_FULL/
-  only:
-    refs:
-    - master
-    - merge_requests
 
 # YAML Job Template Configuration
 .dnd_template:
@@ -74,8 +70,8 @@ variables:
     - merge_requests
   except:
     changes:
-    - docs/*
-    - tests/*
+    - docs/**/*
+    - tests/**/*
 
 .ansible_template:
   image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/ansible:latest
@@ -100,6 +96,10 @@ variables:
     refs:
     - master
     - merge_requests
+  except:
+    changes:
+    - docs/**/*
+    - tests/**/*
 
 .pytest_template:
   extends: .ansible_template
