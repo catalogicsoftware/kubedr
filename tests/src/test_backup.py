@@ -41,7 +41,10 @@ def resources(globalconfig):
 @pytest.mark.dependency()
 def test_creating_backuplocation(globalconfig, resources):
     endpoint = globalconfig.testenv["backuploc"]["endpoint"]
-    bucket_name = "testbucket-{}".format(timestamp())
+
+    bucket_name = "{}-{}".format(
+        globalconfig.testenv["backuploc"]["bucket_name_prefix"],
+        timestamp())
 
     backuploc_name = "{}-{}".format("tests3", timestamp())
     backuploc_spec = {

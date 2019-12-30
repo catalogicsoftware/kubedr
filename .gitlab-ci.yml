@@ -4,7 +4,18 @@ stages:
 - docker_build
 - docker_push
 - go_build
+- deploy
+- provision
+- apply
+- test
+- cleanup
 
+# ===== GLOBAL VARIABLES BEGIN =====
+variables:
+  BUILD_NUMBER: ${CI_PIPELINE_ID}
+# ===== GLOBAL VARIABLES END =====
+
+# ===== TEMPLATE CONFIGURATION BEGIN =====
 .lint_template:
   only:
     refs:
@@ -55,16 +66,55 @@ stages:
     DOCKER_REGISTRY: docker-registry.devad.catalogic.us:5000
 
     DOCKER_KUBEDR_IMAGE_NAME_SHORT: kubedr
-    DOCKER_KUBEDR_IMAGE_NAME_LONG: $DOCKER_REGISTRY/$DOCKER_KUBEDR_IMAGE_NAME_SHORT
-    DOCKER_KUBEDR_IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+    DOCKER_KUBEDR_IMAGE_NAME_LONG: ${DOCKER_REGISTRY}/${DOCKER_KUBEDR_IMAGE_NAME_SHORT}
+    DOCKER_KUBEDR_IMAGE_TAG: ${CI_COMMIT_SHORT_SHA}
   only:
     refs:
     - master
     - merge_requests
   except:
     changes:
-    - docs/**/*
-    - tests/**/*
+    - docs/*
+    - tests/*
+
+.ansible_template:
+  image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/ansible:latest
+  variables:
+    ANSIBLE_PLAYBOOK_REPO_NAME: kcx-misc
+    ANSIBLE_PLAYBOOK_REPO_BRANCH: master
+    ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ad.catalogic.us/kubernetes/kcx-misc.git
+    ANSIBLE_PLAYBOOK_PATH_BASE: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}
+    ANSIBLE_PLAYBOOK_PATH_FULL: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}/ansible
+  before_script:
+  - mkdir -p ${ANSIBLE_PLAYBOOK_PATH_BASE}
+  - cd ${ANSIBLE_PLAYBOOK_PATH_BASE}
+  - >
+    git clone
+    --single-branch
+    --branch ${ANSIBLE_PLAYBOOK_REPO_BRANCH}
+    ${ANSIBLE_PLAYBOOK_REPO}
+    .
+  - cd ${ANSIBLE_PLAYBOOK_PATH_FULL}
+  - ansible --version
+  only:
+    refs:
+    - master
+    - merge_requests
+
+.pytest_template:
+  extends: .ansible_template
+  image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/pytest-kubectl
+  variables:
+    PYTEST_PATH_BASE: ${CI_PROJECT_DIR}/tests
+    PYTEST_ADDOPTS: "--color=yes"
+  artifacts:
+    name: "${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
+    paths:
+    - tests/*.xml
+    reports:
+      junit: tests/*.xml
+
+# ===== TEMPLATE CONFIGURATION END =====
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
 yaml_lint:
@@ -123,7 +173,7 @@ userguide:
   variables:
     DOCS_NAME: userguide
   script:
-  - cd docs/$DOCS_NAME
+  - cd docs/${DOCS_NAME}
   - make html
   artifacts:
     paths:
@@ -139,7 +189,7 @@ devguide:
   variables:
     DOCS_NAME: devguide
   script:
-  - cd docs/$DOCS_NAME
+  - cd docs/${DOCS_NAME}
   - make html
   artifacts:
     paths:
@@ -154,7 +204,7 @@ kubedr_image:
   stage: docker_build
   script:
   - make docker_build
-  - docker push $DOCKER_KUBEDR_IMAGE_NAME_LONG:$DOCKER_KUBEDR_IMAGE_TAG
+  - docker push ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
 
 kubedr_latest:
   extends: .dnd_template
@@ -176,18 +226,132 @@ kubedr_tags:
     - tags
 
 kubedr_go:
-  image: docker-registry.devad.catalogic.us:5000/go-kustomize:latest
+  extends: .dnd_template
+  image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/go-kustomize:latest
   stage: go_build
+  before_script:
+  - kustomize version
   script:
   - make go_build
   artifacts:
     paths:
     - kubedr/kubedr.yaml
-  only:
-    refs:
-    - master
-    - merge_requests
-  except:
-    changes:
-    - docs/**/*
-    - tests/**/*
+  cache:
+    paths:
+    - kubedr/kubedr.yaml
+    key: ${BUILD_NUMBER}
+    policy: push
+
+k8s_deploy:
+  extends: .ansible_template
+  stage: deploy
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    k8s-deploy.yml
+
+k8s_provision:
+  extends: .ansible_template
+  stage: provision
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    k8s-provision.yml
+
+kubedr:
+  extends: .ansible_template
+  stage: apply
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    kubedr-apply.yml
+  dependencies:
+  - kubedr_go
+  cache:
+    paths:
+    - kubedr/kubedr.yaml
+    key: ${BUILD_NUMBER}
+    policy: pull
+
+k8s_1.13:
+  extends: .pytest_template
+  stage: test
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    -l "*1-13*"
+    testenv-setup.yml
+  - cd ${PYTEST_PATH_BASE}
+  - sh ./runtests
+
+k8s_1.14:
+  extends: .pytest_template
+  stage: test
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    -l "*1-14*"
+    testenv-setup.yml
+  - cd ${PYTEST_PATH_BASE}
+  - sh ./runtests
+
+k8s_1.15:
+  extends: .pytest_template
+  stage: test
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    -l "*1-15*"
+    testenv-setup.yml
+  - cd ${PYTEST_PATH_BASE}
+  - sh ./runtests
+
+k8s_1.16:
+  extends: .pytest_template
+  stage: test
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    -l "*1-16*"
+    testenv-setup.yml
+  - cd ${PYTEST_PATH_BASE}
+  - sh ./runtests
+
+k8s_1.17:
+  extends: .pytest_template
+  stage: test
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    -l "*1-17*"
+    testenv-setup.yml
+  - cd ${PYTEST_PATH_BASE}
+  - sh ./runtests
+
+k8s_cleanup:
+  extends: .ansible_template
+  stage: cleanup
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    k8s-cleanup.yml
+  when: always
+
+s3_cleanup:
+  extends: .ansible_template
+  stage: cleanup
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    s3-cleanup.yml
+  when: always

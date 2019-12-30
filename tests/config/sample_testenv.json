@@ -2,7 +2,8 @@
     "backuploc": {
         "endpoint": "http://10.106.44.180:9000",
         "access_key": "minio",
-        "secret_key": "minio123",
+        "bucket_name_prefix": "kubedr-testbucket1",
+        "secret_key": "minio123"
     },
     "etcd_data": {
         "ca.crt": "/tmp/ca.crt",

@@ -22,6 +22,7 @@ docker_push_latest:
 	docker pull ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG} || true
 	docker tag ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG} ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:latest
 	docker push ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:latest
+	docker push ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
 
 docker_push_tags:
 ifndef CI_COMMIT_TAG
