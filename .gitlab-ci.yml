@@ -1,4 +1,4 @@
-# GitLab CI for KubeDR 
+# GitLab CI for KubeDR
 # See the devguide for further CI/CD details.
 
 stages:
@@ -76,7 +76,7 @@ variables:
     - docs/**/*
     - tests/**/*
 
-# Ansible plays 
+# Ansible plays
 .ansible_template:
   image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/ansible:latest
   variables:
