@@ -1,3 +1,6 @@
+# GitLab CI for KubeDR 
+# See the devguide for further CI/CD details.
+
 stages:
 - lint
 - docs_build
@@ -25,7 +28,7 @@ variables:
     variables:
     - $SKIP_LINT == "yes" || $SKIP_DOCS == "true"
 
-# Userguide/Devguide Template Configuration
+# Userguide/Devguide Sphinx docs. Upload to GitLab pages under subdomain for hosting.
 .docs_template:
   image: python:3.7-alpine3.10
   variables:
@@ -44,7 +47,7 @@ variables:
   - mkdir -p $DOCS_PATH_FULL
   - cp -rf $DOCS_PATH_BUILD/* $DOCS_PATH_FULL/
 
-# YAML Job Template Configuration
+# Docker-in-Docker for docker building/tagging/pushing
 .dnd_template:
   image: docker:19.03
   services:
@@ -73,6 +76,7 @@ variables:
     - docs/**/*
     - tests/**/*
 
+# Ansible plays 
 .ansible_template:
   image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/ansible:latest
   variables:
@@ -101,6 +105,7 @@ variables:
     - docs/**/*
     - tests/**/*
 
+# Pytest tests
 .pytest_template:
   extends: .ansible_template
   image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/pytest-kubectl
