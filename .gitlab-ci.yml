@@ -19,17 +19,25 @@ variables:
 # ===== GLOBAL VARIABLES END =====
 
 # ===== TEMPLATE CONFIGURATION BEGIN =====
-.lint_template:
+.general_template:
   only:
     refs:
     - master
     - merge_requests
+  except:
+    changes:
+    - docs/**/*
+    - tests/**/*
+
+.lint_template:
+  extends: .general_template
   except:
     variables:
     - $SKIP_LINT == "yes" || $SKIP_DOCS == "true"
 
 # Userguide/Devguide Sphinx docs. Upload to GitLab pages under subdomain for hosting.
 .docs_template:
+  extends: .general_template
   image: python:3.7-alpine3.10
   variables:
     SPHINXOPTS: ""
@@ -49,6 +57,7 @@ variables:
 
 # Docker-in-Docker for docker building/tagging/pushing
 .dnd_template:
+  extends: .general_template
   image: docker:19.03
   services:
   - name: docker:19.03-dind
@@ -67,10 +76,6 @@ variables:
     DOCKER_KUBEDR_IMAGE_NAME_SHORT: kubedr
     DOCKER_KUBEDR_IMAGE_NAME_LONG: ${DOCKER_REGISTRY}/${DOCKER_KUBEDR_IMAGE_NAME_SHORT}
     DOCKER_KUBEDR_IMAGE_TAG: ${CI_COMMIT_SHORT_SHA}
-  only:
-    refs:
-    - master
-    - merge_requests
   except:
     changes:
     - docs/**/*
@@ -78,6 +83,7 @@ variables:
 
 # Ansible plays
 .ansible_template:
+  extends: .general_template
   image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/ansible:latest
   variables:
     ANSIBLE_PLAYBOOK_REPO_NAME: kcx-misc
@@ -86,24 +92,13 @@ variables:
     ANSIBLE_PLAYBOOK_PATH_BASE: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}
     ANSIBLE_PLAYBOOK_PATH_FULL: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}/ansible
   before_script:
-  - mkdir -p ${ANSIBLE_PLAYBOOK_PATH_BASE}
-  - cd ${ANSIBLE_PLAYBOOK_PATH_BASE}
   - >
     git clone
     --single-branch
     --branch ${ANSIBLE_PLAYBOOK_REPO_BRANCH}
     ${ANSIBLE_PLAYBOOK_REPO}
-    .
-  - cd ${ANSIBLE_PLAYBOOK_PATH_FULL}
+  - cd $ANSIBLE_PLAYBOOK_PATH_FULL
   - ansible --version
-  only:
-    refs:
-    - master
-    - merge_requests
-  except:
-    changes:
-    - docs/**/*
-    - tests/**/*
 
 # Pytest tests
 .pytest_template:
@@ -118,7 +113,9 @@ variables:
     - tests/*.xml
     reports:
       junit: tests/*.xml
-
+  except:
+    variables:
+    - $SKIP_TEST == "yes"
 # ===== TEMPLATE CONFIGURATION END =====
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
@@ -350,6 +347,10 @@ k8s_cleanup:
     -e build_number="${BUILD_NUMBER}"
     k8s-cleanup.yml
   when: always
+  except:
+    variables:
+    - $SKIP_TEST == "yes"
+    - $SKIP_CLEANUP == "yes"
 
 s3_cleanup:
   extends: .ansible_template
@@ -360,3 +361,7 @@ s3_cleanup:
     -e build_number="${BUILD_NUMBER}"
     s3-cleanup.yml
   when: always
+  except:
+    variables:
+    - $SKIP_TEST == "yes"
+    - $SKIP_CLEANUP == "yes"
