@@ -4,10 +4,9 @@
 stages:
 - lint
 - docs_build
-- docker_build
+- build
 - docker_push
 - go_build
-- deploy
 - provision
 - apply
 - test
@@ -91,6 +90,7 @@ variables:
     ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ad.catalogic.us/kubernetes/kcx-misc.git
     ANSIBLE_PLAYBOOK_PATH_BASE: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}
     ANSIBLE_PLAYBOOK_PATH_FULL: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}/ansible
+  dependencies: []
   before_script:
   - >
     git clone
@@ -113,9 +113,18 @@ variables:
     - tests/*.xml
     reports:
       junit: tests/*.xml
+  needs:
+  - job: kubedr_apply
+    artifacts: false
+  - job: k8s_provision
+    artifacts: false
   except:
     variables:
     - $SKIP_TEST == "yes"
+
+.cleanup_template:
+  extends: .ansible_template
+  dependencies: []
 # ===== TEMPLATE CONFIGURATION END =====
 
 # Rules/Configuration: https://yamllint.readthedocs.io/en/stable/rules.html
@@ -203,26 +212,39 @@ devguide:
 
 kubedr_image:
   extends: .dnd_template
-  stage: docker_build
+  stage: build
   script:
   - make docker_build
   - docker push ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
 
-kubedr_latest:
-  extends: .dnd_template
-  stage: docker_push
-  variables:
-    GIT_STRATEGY: none
+k8s_deploy:
+  extends: .ansible_template
+  stage: build
   script:
-  - make docker_push_latest
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    k8s-deploy.yml
 
-kubedr_tags:
+kubedr_push_latest:
   extends: .dnd_template
   stage: docker_push
   variables:
     GIT_STRATEGY: none
   script:
   - make docker_push_latest
+  needs:
+  - job: kubedr_image
+
+kubedr_push_tags:
+  extends: .dnd_template
+  stage: docker_push
+  variables:
+    GIT_STRATEGY: none
+  script:
+  - make docker_push_latest
+  needs:
+  - job: kubedr_image
   only:
     refs:
     - tags
@@ -244,15 +266,6 @@ kubedr_go:
     key: ${BUILD_NUMBER}
     policy: push
 
-k8s_deploy:
-  extends: .ansible_template
-  stage: deploy
-  script:
-  - >
-    ansible-playbook
-    -e build_number="${BUILD_NUMBER}"
-    k8s-deploy.yml
-
 k8s_provision:
   extends: .ansible_template
   stage: provision
@@ -261,8 +274,10 @@ k8s_provision:
     ansible-playbook
     -e build_number="${BUILD_NUMBER}"
     k8s-provision.yml
+  needs:
+  - job: k8s_deploy
 
-kubedr:
+kubedr_apply:
   extends: .ansible_template
   stage: apply
   script:
