@@ -23,10 +23,6 @@ variables:
     refs:
     - master
     - merge_requests
-  except:
-    changes:
-    - docs/**/*
-    - tests/**/*
 
 .lint_template:
   extends: .general_template
