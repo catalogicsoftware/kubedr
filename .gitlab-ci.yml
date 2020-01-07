@@ -145,13 +145,6 @@ md_spelling_lint:
   script:
   - find . -type f -name '*.md' | xargs misspell -error
 
-sh_lint:
-  extends: .lint_template
-  stage: lint
-  image: cytopia/awesome-ci
-  script:
-  - syntax-sh --text --path=./scripts
-
 go_lint:
   extends: .lint_template
   stage: lint
