@@ -110,6 +110,7 @@ variables:
     artifacts: false
   - job: k8s_provision
     artifacts: false
+  - job: kubedr_image
   except:
     variables:
     - $SKIP_TEST == "yes"

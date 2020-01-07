@@ -7,6 +7,5 @@
   investigating how to extend the same functionality to clusters where
   etcd snapshot cannot be taken.
 
-- The project is tested using 1.16 but we are currently verifying how
-  many older versions can be supported.
+- The project is tested using Kubernetes version 1.13 through 1.17.
 
