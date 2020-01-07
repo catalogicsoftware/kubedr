@@ -3,9 +3,11 @@
 ==============
 
 - Since we need direct access to etcd, *Kubedr* currently works only
-  for on-prem clusters or where ever etcd can be accessed. We are
-  investigating how to extend the same functionality to clusters where
-  etcd snapshot cannot be taken.
+  for clusters where *etcd* is accessible and a snapshot can be
+  taken. 
 
-- The project is tested using Kubernetes version 1.13 through 1.17.
+  This includes on-prem clusters as well as those in the cloud that
+  are explicitly set up on the compute instances.
+
+- Supported Versions: 1.13 - 1.17.
 

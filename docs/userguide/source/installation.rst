@@ -7,16 +7,7 @@
 - Make sure that ``kubectl`` is set up to access your cluster.
 
 - Download the YAML file containing all of *Kubedr's* resource
-  definitions. It can be downloaded by using "Download artifacts" link
-  of "kcx repo" on gitlab. Choose "kubedr_go" in the dropdown list of
-  artifacts. 
-
-  .. note:: 
-
-    For now, *Kubedr* is only accessible internally, hence the
-    instructions to download from in-house "gitlab". Once we make
-    a decision on release mechanism, the instructions will accordingly
-    change. 
+  definitions from **NEED TO INCLUDE RELEASE LINK**. xs
 
   .. note::
 
@@ -31,12 +22,8 @@
   Note that the following two images are required for *Kubedr*  to
   work.
 
-  * docker-registry.devad.catalogic.us:5000/kubedrutil:0.0.2
-  * docker-registry.devad.catalogic.us:5000/kubedr:dev
-
-  Currently, these images are available only from internal Catalogic
-  repo. But they will be moved to an external repo once we decide on a
-  release mechanism.
+  * catalogicsoftware/kubedrutil:0.0.2
+  * catalogicsoftware/kubedr:0.42
 
 - Applying ``kubedr.yaml`` will create a new namespace called
   *kubedr-system* and starts all the necessary pods, services,

@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'KubeDR'
-copyright = '2019, Catalogic Software'
+copyright = '2020, Catalogic Software'
 author = 'Catalogic Software'
 
 
