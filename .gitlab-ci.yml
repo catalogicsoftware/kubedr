@@ -71,10 +71,6 @@ variables:
     DOCKER_KUBEDR_IMAGE_NAME_SHORT: kubedr
     DOCKER_KUBEDR_IMAGE_NAME_LONG: ${DOCKER_REGISTRY}/${DOCKER_KUBEDR_IMAGE_NAME_SHORT}
     DOCKER_KUBEDR_IMAGE_TAG: ${CI_COMMIT_SHORT_SHA}
-  except:
-    changes:
-    - docs/**/*
-    - tests/**/*
 
 # Ansible plays
 .ansible_template:
