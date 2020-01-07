@@ -24,7 +24,6 @@ import (
 
 // BackupLocationSpec defines the desired state of BackupLocation
 type BackupLocationSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// kubebuilder:validation:MinLength:=1

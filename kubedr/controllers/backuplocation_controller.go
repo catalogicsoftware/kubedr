@@ -96,7 +96,6 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
         // The object is being deleted
         if containsString(backupLoc.ObjectMeta.Finalizers, finalizer) {
             // our finalizer is present, handle any pre-deletion logic here.
-			// TODO
 
             // remove our finalizer from the list and update it.
             backupLoc.ObjectMeta.Finalizers = removeString(backupLoc.ObjectMeta.Finalizers, finalizer)

@@ -59,7 +59,6 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		return ctrl.Result{}, ignoreNotFound(err)
 	}
 
-	// RD: Make the exact value configurable.
 	finalizer := "metadata-backup-policy.finalizers.kubedr.catalogicsoftware.com"
 
 	if policy.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -76,7 +75,6 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
         // The object is being deleted
         if containsString(policy.ObjectMeta.Finalizers, finalizer) {
             // our finalizer is present, handle any pre-deletion logic here.
-			// TODO
 
             // remove our finalizer from the list and update it.
             policy.ObjectMeta.Finalizers = removeString(policy.ObjectMeta.Finalizers, finalizer)
@@ -89,8 +87,6 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		// Nothing more to do for DELETE.
         return ctrl.Result{}, nil
     }
-
-	// TODO: Update Status.
 
 	// Now, make sure spec matches the status of world.
 
@@ -132,7 +128,7 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 			// So make sure cache is updated before returning from here.
 			//
 			// We are just waiting for some time. Does it ensure that cache is updated?
-			// TODO: Need to know more about cache semantics.
+			// Need to know more about cache semantics.
 			r.waitForCreatedResource(req.Namespace, cronJobName)
 		}
 
@@ -214,28 +210,8 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 		return labelName;
 	}
 
-/*
-	options := &corev1.ConfigMap{}
-	optionsKey := types.NamespacedName{Namespace: policy.Namespace, Name: policy.Spec.Options}
-
-	err := r.Get(context.TODO(), optionsKey, options)
-	if err != nil {
-		if !apierrors.IsNotFound(err) {
-			log.Error(err, fmt.Sprintf("Error in getting config map (%s)", policy.Spec.Options))
-		}
-
-		return labelName;
-	}
-
-	if options.Data == nil {
-		log.Error(err, fmt.Sprintf("No Data in config map (%s)", policy.Spec.Options))
-		return labelName;
-	}
-*/
-
 	key := "master-node-label-name"
 
-	// val, exists := options.Data[key]
 	val, exists := policy.Spec.Options[key]
 	if !exists {
 		return labelName;
@@ -273,7 +249,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 	backupLocKey := types.NamespacedName{Namespace: namespace, Name: cr.Spec.Destination}
 	err := r.Get(context.TODO(), backupLocKey, backupLocation)
 	if err != nil {
-		// RD: If the error is "not found", there is no point in retrying.
+		// If the error is "not found", there is no point in retrying.
 		return nil, err
 	}
 
@@ -304,7 +280,6 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 		etcdCredsVolume,
 	}
 
-	// This should ideally be done in defaulter web hook.
 	env := []corev1.EnvVar {
 		{
 			Name: "AWS_ACCESS_KEY",
@@ -374,7 +349,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 		volumes = append(volumes, certsDirVolume)
 		volumeMounts = append(volumeMounts, corev1.VolumeMount {Name: "certs-dir", MountPath: "/certs_dir"})
 
-		// TODO: Shouldn't hard code /data here. It ties too closely with the
+		// FIX: Shouldn't hard code /data here. It ties too closely with the
 		// code in the backup container.
 		env = append(env, corev1.EnvVar {Name: "CERTS_DEST_DIR", Value: "/data/certificates"})
 		env = append(env, corev1.EnvVar {Name: "CERTS_SRC_DIR", Value: "/certs_dir"})
@@ -400,7 +375,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 					Namespace: cr.Namespace,
 				},
 				Spec: batchv1.JobSpec {
-					// RD: Set backoffLimit to 2.
+					// TODO: Set backoffLimit to 2.
 					Template: corev1.PodTemplateSpec {
 						ObjectMeta: metav1.ObjectMeta {
 							Name: cr.Name + "-backup-pod-template",
@@ -411,8 +386,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 							RestartPolicy: "Never",
 							HostNetwork: true,
 
-							// To make sure that backup pod runs on the master.
-							// TODO: We need to perhaps accept another label as configurable option.
+							// Make sure that backup pod runs on the master.
 							Affinity: &corev1.Affinity {
 								NodeAffinity: &corev1.NodeAffinity {
 									RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector {
@@ -459,5 +433,3 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 		},
 	}, nil
 }
-
-

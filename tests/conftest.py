@@ -48,7 +48,6 @@ class GlobalConfig:
 
         self._init_apis()
 
-
     def _init_apis(self):
         self.namespace = "kubedr-system"
         self.pod_api = kubeclient.PodAPI(self.namespace)

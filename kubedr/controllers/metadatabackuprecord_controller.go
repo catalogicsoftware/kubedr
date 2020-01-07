@@ -69,7 +69,6 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		return ctrl.Result{}, ignoreNotFound(err)
 	}
 
-	// RD: Make the exact value configurable.
 	finalizer := "mbr.finalizers.kubedr.catalogicsoftware.com"
 
 	if record.ObjectMeta.DeletionTimestamp.IsZero() {
@@ -85,8 +84,7 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
     } else {
         // The object is being deleted
         if containsString(record.ObjectMeta.Finalizers, finalizer) {
-            // our finalizer is present, handle any pre-deletion logic here.
-			// TODO
+            // Our finalizer is present, handle any pre-deletion logic here.
 
             // remove our finalizer from the list and update it.
             record.ObjectMeta.Finalizers = removeString(record.ObjectMeta.Finalizers, finalizer)
@@ -99,8 +97,6 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		// Nothing more to do for DELETE.
         return ctrl.Result{}, nil
     }
-
-	// TODO: Update Status.
 
 	var policy kubedrv1alpha1.MetadataBackupPolicy
 	log.Info("Getting policy...")
@@ -142,7 +138,7 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 	backupLocKey := types.NamespacedName{Namespace: req.Namespace, Name: policy.Spec.Destination}
 	err := r.Get(context.TODO(), backupLocKey, backupLoc)
 	if err != nil {
-		// RD: If the error is "not found", there is no point in retrying.
+		// If the error is "not found", there is no point in retrying.
 		return ctrl.Result{}, err
 	}
 
@@ -173,7 +169,7 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 			return ctrl.Result{}, err
 		}
 
-		// TODO: We really need to make sure that delete succeeded. 
+		// FIX: We really need to make sure that delete succeeded. 
 		numDeletedBackups.Inc()
 	}
 
@@ -231,11 +227,6 @@ func (r *MetadataBackupRecordReconciler) SetupWithManager(mgr ctrl.Manager) erro
 		Complete(r)
 }
 
-// We are creating job instead of pod so that we can use 
-// "ttlSecondsAfterFinished" feature. This is required to clean up
-// finished jobs. Note that alpha feature "TTLAfterFinished" needs to
-// be enabled on the cluster for this feature to work.
-// TODO: Find a more reliable mechanism.
 func createResticSnapDeletePod(backupLocation *kubedrv1alpha1.BackupLocation, log logr.Logger, 
 	snapshotId string, mbrName string, namespace string) (*corev1.Pod, error) {
 
@@ -252,27 +243,6 @@ func createResticSnapDeletePod(backupLocation *kubedrv1alpha1.BackupLocation, lo
 	restic_password := corev1.SecretKeySelector{}
 	restic_password.Name = backupLocation.Spec.Credentials
 	restic_password.Key = "restic_repo_password"
-
-	/*
-	var ttl int32 = 300
-	return &batchv1.Job {
-		ObjectMeta: metav1.ObjectMeta {
-			Name: mbrName + "-snapdel-job-" + snapshotId,
-			Namespace: namespace,
-		},
-		Spec: batchv1.JobSpec {
-			// RD: Set backoffLimit to 2.
-
-			// Hardcoding TTL for now. 
-			// TODO: We need a more reliable and deterministic mechanism. 
-			// This also requires TTLAfterFinished feature to be enabled on the cluster.
-			TTLSecondsAfterFinished: &ttl,
-
-*/
-
-	// I would really like to set annotation for the pod rather than label
-	// but r.List() seems to work only with labels. Until a solution is found
-	// to list pods with a given annotations, use label.
 
 	return &corev1.Pod {
 		ObjectMeta: metav1.ObjectMeta{
