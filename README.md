@@ -2,7 +2,7 @@
 
 Welcome to KubeDR!
 
-![catalogic Logo](logos/logo-1.5-vert-xxsmall.png)
+![catalogic Logo](logos/logo-2.5-horiz-small.png)
 
 ## Overview
 
