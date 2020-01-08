@@ -336,7 +336,7 @@ kubedr_dockerhhub:
   variables:
     GIT_STRATEGY: none
   script:
-  - make docker_push_latest
+  - make docker_push_tags
   when: on_success
   only:
     refs:
