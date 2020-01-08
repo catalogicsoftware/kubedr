@@ -81,7 +81,7 @@ variables:
   variables:
     ANSIBLE_PLAYBOOK_REPO_NAME: kubedr-misc
     ANSIBLE_PLAYBOOK_REPO_BRANCH: master
-    ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER}/kubernetes/kubedrmisc.git
+    ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/kubernetes/kubedrmisc.git
     ANSIBLE_PLAYBOOK_PATH_BASE: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}
     ANSIBLE_PLAYBOOK_PATH_FULL: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}/ansible
   dependencies: []
