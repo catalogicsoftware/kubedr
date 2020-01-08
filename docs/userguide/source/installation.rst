@@ -6,8 +6,8 @@
 
 - Make sure that ``kubectl`` is set up to access your cluster.
 
-- Download the YAML file containing all of *Kubedr's* resource
-  definitions from **NEED TO INCLUDE RELEASE LINK**. xs
+- Download `kubedr.yaml` from the 
+  [Releases page](https://github.com/catalogicsoftware/kubedr/releases).
 
   .. note::
 

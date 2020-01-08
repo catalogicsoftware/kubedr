@@ -2,6 +2,8 @@
 
 Welcome to KubeDR!
 
+![catalogic Logo](logos/logo-2.0-vert-xsmall.png)
+
 ## Overview
 
 Kubernetes stores all the cluster data (such as resource specs) in
@@ -20,10 +22,12 @@ first class backup support for the very important Kubernetes cluster
 data stored in *etcd*. 
 
 For sure, there are recipes on how to take *etcd* snapshot but the
-*KubeDR* project from Catalogic Software aims to provide complete end
-to end data protection for Kubernetes data stored in *etcd*. In
-addition, this project will backup certificates as well so if a master
-needs to be rebuilt, all the data is available.
+*KubeDR* project from 
+[Catalogic Software](https://www.catalogicsoftware.com/)
+aims to provide complete end to end data protection for Kubernetes
+data stored in *etcd*. In addition, this project will backup
+certificates as well so if a master needs to be rebuilt, all the data
+is available.
 
 ## Features
 
