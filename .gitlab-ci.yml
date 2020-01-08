@@ -79,7 +79,7 @@ variables:
   extends: .general_template
   image: docker-registry.devad.catalogic.us:5000/ansible:latest
   variables:
-    ANSIBLE_PLAYBOOK_REPO_NAME: kubedr-misc
+    ANSIBLE_PLAYBOOK_REPO_NAME: kubedrmisc
     ANSIBLE_PLAYBOOK_REPO_BRANCH: master
     ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/kubernetes/kubedrmisc.git
     ANSIBLE_PLAYBOOK_PATH_BASE: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}
