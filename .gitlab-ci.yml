@@ -10,7 +10,7 @@ stages:
 - provision
 - apply
 - test
-- docker_push_tags
+- release
 - cleanup
 
 # ===== GLOBAL VARIABLES BEGIN =====
@@ -328,9 +328,9 @@ k8s_1.17:
   - cd ${PYTEST_PATH_BASE}
   - sh ./runtests
 
-kubedr_push_tags:
+kubedr_dockerhhub:
   extends: .dnd_template
-  stage: docker_push_tags
+  stage: release
   variables:
     GIT_STRATEGY: none
   script:
