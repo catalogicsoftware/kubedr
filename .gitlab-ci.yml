@@ -4,12 +4,13 @@
 stages:
 - lint
 - docs_build
-- build
+- general_build
 - docker_push
 - go_build
 - provision
 - apply
 - test
+- docker_push_tags
 - cleanup
 
 # ===== GLOBAL VARIABLES BEGIN =====
@@ -199,14 +200,14 @@ devguide:
 
 kubedr_image:
   extends: .dnd_template
-  stage: build
+  stage: general_build
   script:
   - make docker_build
   - docker push ${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
 
 k8s_deploy:
   extends: .ansible_template
-  stage: build
+  stage: general_build
   script:
   - >
     ansible-playbook
@@ -222,19 +223,6 @@ kubedr_push_latest:
   - make docker_push_latest
   needs:
   - job: kubedr_image
-
-kubedr_push_tags:
-  extends: .dnd_template
-  stage: docker_push
-  variables:
-    GIT_STRATEGY: none
-  script:
-  - make docker_push_latest
-  needs:
-  - job: kubedr_image
-  only:
-    refs:
-    - tags
 
 kubedr_go:
   extends: .dnd_template
@@ -340,6 +328,18 @@ k8s_1.17:
   - cd ${PYTEST_PATH_BASE}
   - sh ./runtests
 
+kubedr_push_tags:
+  extends: .dnd_template
+  stage: docker_push_tags
+  variables:
+    GIT_STRATEGY: none
+  script:
+  - make docker_push_latest
+  when: on_success
+  only:
+    refs:
+    - tags
+
 k8s_cleanup:
   extends: .ansible_template
   stage: cleanup
@@ -351,7 +351,6 @@ k8s_cleanup:
   when: always
   except:
     variables:
-    - $SKIP_TEST == "yes"
     - $SKIP_CLEANUP == "yes"
 
 s3_cleanup:
@@ -365,5 +364,4 @@ s3_cleanup:
   when: always
   except:
     variables:
-    - $SKIP_TEST == "yes"
     - $SKIP_CLEANUP == "yes"
