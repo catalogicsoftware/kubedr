@@ -50,6 +50,8 @@ features.
 
 - Improve monitoring/reporting.
 
+- Support *Helm* installs.
+
 - Implement referential integrity semantics.
 
 - Improve restore capabilities.
