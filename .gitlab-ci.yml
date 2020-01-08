@@ -77,11 +77,11 @@ variables:
 # Ansible plays
 .ansible_template:
   extends: .general_template
-  image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/ansible:latest
+  image: docker-registry.devad.catalogic.us:5000/ansible:latest
   variables:
-    ANSIBLE_PLAYBOOK_REPO_NAME: kcx-misc
+    ANSIBLE_PLAYBOOK_REPO_NAME: kubedr-misc
     ANSIBLE_PLAYBOOK_REPO_BRANCH: master
-    ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ad.catalogic.us/kubernetes/kcx-misc.git
+    ANSIBLE_PLAYBOOK_REPO: https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER}/kubernetes/kubedrmisc.git
     ANSIBLE_PLAYBOOK_PATH_BASE: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}
     ANSIBLE_PLAYBOOK_PATH_FULL: ${CI_PROJECT_DIR}/${ANSIBLE_PLAYBOOK_REPO_NAME}/ansible
   dependencies: []
@@ -97,7 +97,7 @@ variables:
 # Pytest tests
 .pytest_template:
   extends: .ansible_template
-  image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/pytest-kubectl
+  image: docker-registry.devad.catalogic.us:5000/pytest-kubectl
   variables:
     PYTEST_PATH_BASE: ${CI_PROJECT_DIR}/tests
     PYTEST_ADDOPTS: "--color=yes"
@@ -226,7 +226,7 @@ kubedr_push_latest:
 
 kubedr_go:
   extends: .dnd_template
-  image: gitlab.ad.catalogic.us:4567/kubernetes/kcx-misc/go-kustomize:latest
+  image: docker-registry.devad.catalogic.us:5000/go-kustomize
   stage: go_build
   before_script:
   - kustomize version
@@ -349,9 +349,6 @@ k8s_cleanup:
     -e build_number="${BUILD_NUMBER}"
     k8s-cleanup.yml
   when: always
-  except:
-    variables:
-    - $SKIP_CLEANUP == "yes"
 
 s3_cleanup:
   extends: .ansible_template
@@ -362,6 +359,3 @@ s3_cleanup:
     -e build_number="${BUILD_NUMBER}"
     s3-cleanup.yml
   when: always
-  except:
-    variables:
-    - $SKIP_CLEANUP == "yes"
