@@ -19,7 +19,7 @@ production use.**
 There are projects and products that backup application data (stored
 in *Persistent Volumes*) but there is no project that provides same
 first class backup support for the very important Kubernetes cluster
-data stored in *etcd*. 
+data stored in *etcd*.
 
 For sure, there are recipes on how to take *etcd* snapshot but the
 *KubeDR* project from 
@@ -46,19 +46,19 @@ details, please see
 
 The following list shows many items that are planned for
 *KubeDR*. Some of them are improvements while others are new
-features. 
+features.
 
 - Improve monitoring/reporting.
 
 - Implement referential integrity semantics.
 
-- Improve restore capabilities. 
+- Improve restore capabilities.
 
 - Support file system as a target for backups.
 
 ## Documentation
 
-we use [Sphinx](http://www.sphinx-doc.org/en/master/) for docs. Source
+We use [Sphinx](http://www.sphinx-doc.org/en/master/) for docs. Source
 for the documentation is in "docs" directory. For built documentation,
 see below:
 
@@ -69,7 +69,7 @@ see below:
 ## Feedback
 
 We would love to hear feedback from users. Please feel free to open
-issues for bugs as well as for any feature requests. 
+issues for bugs as well as for any feature requests.
 
 Please note that the project is in Alpha state so there may be many
 corner cases where things may not work as expected. We are actively
