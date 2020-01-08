@@ -26,6 +26,7 @@ variables:
     refs:
     - master
     - merge_requests
+    - tags
 
 .lint_template:
   extends: .general_template
@@ -237,11 +238,25 @@ kubedr_go:
   artifacts:
     paths:
     - kubedr/kubedr.yaml
-  cache:
+  only:
+    refs:
+    - master
+    - merge_requests
+
+kubedr_go_tags:
+  extends: .dnd_template
+  image: docker-registry.devad.catalogic.us:5000/go-kustomize
+  stage: go_build
+  before_script:
+  - kustomize version
+  script:
+  - make go_build_tags
+  artifacts:
     paths:
     - kubedr/kubedr.yaml
-    key: ${BUILD_NUMBER}
-    policy: push
+  only:
+    refs:
+    - tags
 
 k8s_provision:
   extends: .ansible_template
@@ -335,6 +350,8 @@ kubedr_dockerhhub:
   stage: release
   variables:
     GIT_STRATEGY: none
+
+    DOCKER_KUBEDR_IMAGE_TAG: ${CI_COMMIT_TAG}
   script:
   - make docker_push_tags
   when: on_success
