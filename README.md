@@ -42,20 +42,16 @@ details, please see
 - Restore *etcd* snapshot
 - Restore certificates
 
-## Future
+## Roadmap
 
 The following list shows many items that are planned for
 *KubeDR*. Some of them are improvements while others are new
 features.
 
 - Improve monitoring/reporting.
-
 - Support *Helm* installs.
-
 - Implement referential integrity semantics.
-
 - Improve restore capabilities.
-
 - Support file system as a target for backups.
 
 ## Documentation
