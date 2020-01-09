@@ -3,7 +3,7 @@
 ===========
 
 The CI build, or 'pipeline' in GitLab terms, runs using the GitLab CI/CD toolchain, every 'job' is run in its own pre-determined container.
-Nothing runs on a simple shell level on any host, even docker builds utilize docker-in-docker (DND) to 
+Nothing runs on the base shell level on any host, even docker builds utilize docker-in-docker (DND) to 
 build / push docker images from within a container.
 
 
@@ -33,6 +33,5 @@ Some important documentation pages relating to GitLab's CI/CD pipeline configura
   - For available key/values to define the pipeline in ``gitlab-ci.yml``, see: `GitLab CI/CD Pipeline Configuration Reference`_
 
 
-.. _Predefined environment variables reference https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
-.. _GitLab CI/CD Pipeline Configuration Reference https://docs.gitlab.com/ee/ci/yaml/README.html
-
+.. _Predefined environment variables reference: https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
+.. _GitLab CI/CD Pipeline Configuration Reference: https://docs.gitlab.com/ee/ci/yaml/README.html
