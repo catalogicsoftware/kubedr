@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'KubeDR'
-copyright = '2019, Catalogic Software'
+copyright = '2020, Catalogic Software'
 author = 'Catalogic Software'
 
 
@@ -56,3 +56,5 @@ html_static_path = ['_static']
 html_css_files = [
     'css/custom.css',
 ]
+
+html_logo = "_static/images/logo-2.0-vert-xsmall.png"
