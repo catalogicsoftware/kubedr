@@ -6,12 +6,8 @@ The CI build, or 'pipeline' in GitLab terms, runs using the GitLab CI/CD toolcha
 Nothing runs on the base shell level on any host, even docker builds utilize docker-in-docker (DND) to 
 build / push docker images from within a container.
 
-
-Architecture
-=================
-
 Pipeline Basics
------
+=================
 All pipeline configuration is written in YAML, all currently self-contained within the ``gitlab-ci.yml`` file
 at the root of the repository. 
 
@@ -22,6 +18,24 @@ Currently the following triggers a pipeline run:
   - Pushing to a branch with an open merge request
 
   - Pushing a tag
+
+The pipeline is visible from the GitLab projects screen > CI/CD. Each 'circle' at the top level represents a 'stage', if you
+click into it you will see the individual jobs running in parallel within that same stage.
+
+Artifacts
+=================
+The three artifacts being produced are:
+  1. `kubedr.yaml` 
+  2. userguide 
+  3. devguide 
+
+Of chief importance is the `kubedr.yaml` file, which holds the bundled operator resource definition for *KubeDR* and is applied against
+Kubernetes masters during the `apply` stage, and tested against in the `test` stage.
+
+Releases
+=================
+Releases are controlled by *git tags*, a push with a tag will gear the pipeline for a 'release', causing it to change Docker push 
+targets to DockerHub with the specific tagged version, and build the operator with the DockerHub images in mind.
 
 References
 =================

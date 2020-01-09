@@ -56,6 +56,9 @@ variables:
   - rm -rf $DOCS_PATH_FULL/*
   - mkdir -p $DOCS_PATH_FULL
   - cp -rf $DOCS_PATH_BUILD/* $DOCS_PATH_FULL/
+  only:
+    changes:
+    - docs/**/*
 
 # Docker-in-Docker for docker building/tagging/pushing
 .dnd_template:
@@ -185,9 +188,6 @@ userguide:
     paths:
     - docs/userguide/build/html
     expire_in: 1 week
-  only:
-    changes:
-    - docs/userguide/**/*
 
 devguide:
   extends: .docs_template
@@ -201,9 +201,6 @@ devguide:
     paths:
     - docs/devguide/build/html
     expire_in: 1 week
-  only:
-    changes:
-    - docs/devguide/**/*
 
 kubedr_image:
   extends: .dnd_template
