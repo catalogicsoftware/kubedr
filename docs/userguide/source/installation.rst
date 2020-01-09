@@ -22,8 +22,8 @@
   Note that the following two images are required for *Kubedr*  to
   work.
 
-  * catalogicsoftware/kubedrutil:0.0.2
-  * catalogicsoftware/kubedr:0.42
+  * catalogicsoftware/kubedrutil:0.1.0
+  * catalogicsoftware/kubedr:0.1.0
 
 - Applying ``kubedr.yaml`` will create a new namespace called
   *kubedr-system* and starts all the necessary pods, services,
