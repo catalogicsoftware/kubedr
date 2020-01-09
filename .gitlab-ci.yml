@@ -33,8 +33,7 @@ variables:
 .lint_template:
   extends: .general_template
   except:
-    variables:
-    - $SKIP_LINT == "yes" || $SKIP_DOCS == "true"
+  - $SKIP_LINT == "yes" || $SKIP_DOCS == "true"
 
 # Userguide/Devguide Sphinx docs. Upload to GitLab pages under subdomain for hosting.
 .docs_template:
