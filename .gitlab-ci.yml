@@ -353,7 +353,7 @@ kubedr_push_dockerhhub:
     DOCKER_KUBEDR_IMAGE_TAG: ${CI_COMMIT_TAG}
   script:
   - make docker_push_tags
-  when: on_success
+  when: always
   only:
     refs:
     - tags
