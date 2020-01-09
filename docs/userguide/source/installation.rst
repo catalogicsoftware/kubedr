@@ -41,21 +41,17 @@
 
   $ kubectl -n kubedr-system get all
 
-  # Sample output, your output may vary.
   NAME                                             READY   STATUS    RESTARTS   AGE
-  pod/kubedr-controller-manager-859bc794bb-p9pf2   1/1     Running   126        3d23h
-  
-  NAME                                                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
-  service/kubedr-controller-manager-metrics-service   ClusterIP   10.109.226.24   <none>        8443/TCP,8080/TCP   6d3h
-  service/kubedr-webhook-service                      ClusterIP   10.97.71.44     <none>        443/TCP             6d3h
-  
+  pod/kubedr-controller-manager-7bc7dc96f6-h8v28   2/2     Running   0          4s
+
+  NAME                                                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+  service/kubedr-controller-manager-metrics-service   ClusterIP   10.104.87.59    <none>        8443/TCP   4s
+  service/kubedr-webhook-service                      ClusterIP   10.109.153.83   <none>        443/TCP    4s
+
   NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
-  deployment.apps/kubedr-controller-manager   1/1     1            1           6d3h
-  
+  deployment.apps/kubedr-controller-manager   1/1     1            1           4s
+
   NAME                                                   DESIRED   CURRENT   READY   AGE
-  replicaset.apps/kubedr-controller-manager-6868c85d7    0         0         0       4d20h
-  replicaset.apps/kubedr-controller-manager-79f5684d8    0         0         0       6d3h
-  replicaset.apps/kubedr-controller-manager-859bc794bb   1         1         1       3d23h
-  replicaset.apps/kubedr-controller-manager-8cc9cb9fb    0         0         0       4d21h
+  replicaset.apps/kubedr-controller-manager-7bc7dc96f6   1         1         1       4s
   
 .. _cert-manager: https://cert-manager.io/
