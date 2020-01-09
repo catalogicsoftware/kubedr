@@ -228,6 +228,18 @@ kubedr_push_latest:
   needs:
   - job: kubedr_image
 
+kubedr_push_dockerhhub:
+  extends: .dnd_template
+  stage: docker_push
+  variables:
+    GIT_STRATEGY: none
+  script:
+  - make docker_push_tags
+  when: always
+  only:
+    refs:
+    - tags
+
 kubedr_go:
   extends: .dnd_template
   image: docker-registry.devad.catalogic.us:5000/go-kustomize
@@ -343,20 +355,6 @@ k8s_1.17:
     testenv-setup.yml
   - cd ${PYTEST_PATH_BASE}
   - sh ./runtests
-
-kubedr_push_dockerhhub:
-  extends: .dnd_template
-  stage: release
-  variables:
-    GIT_STRATEGY: none
-
-    DOCKER_KUBEDR_IMAGE_TAG: ${CI_COMMIT_TAG}
-  script:
-  - make docker_push_tags
-  when: always
-  only:
-    refs:
-    - tags
 
 k8s_cleanup:
   extends: .ansible_template
