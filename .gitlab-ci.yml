@@ -27,6 +27,9 @@ variables:
     - master
     - merge_requests
     - tags
+  except:
+    changes:
+    - docs/**/*
 
 .lint_template:
   extends: .general_template
