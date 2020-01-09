@@ -243,7 +243,7 @@ kubedr_go:
     - master
     - merge_requests
 
-kubedr_go_tags:
+kubedr_go_dockerhub:
   extends: .dnd_template
   image: docker-registry.devad.catalogic.us:5000/go-kustomize
   stage: go_build
@@ -279,11 +279,7 @@ kubedr_apply:
     kubedr-apply.yml
   dependencies:
   - kubedr_go
-  cache:
-    paths:
-    - kubedr/kubedr.yaml
-    key: ${BUILD_NUMBER}
-    policy: pull
+  - kubedr_go_dockerhub
 
 k8s_1.13:
   extends: .pytest_template
@@ -345,7 +341,7 @@ k8s_1.17:
   - cd ${PYTEST_PATH_BASE}
   - sh ./runtests
 
-kubedr_dockerhhub:
+kubedr_push_dockerhhub:
   extends: .dnd_template
   stage: release
   variables:
