@@ -47,6 +47,6 @@ go_build:
 
 go_build_tags:
 	cd kubedr/config/manager && \
-		kustomize edit set image controller=${DOCKER_KUBEDR_IMAGE_NAME_LONG_DOCKERHUB}:${DOCKER_KUBEDR_IMAGE_TAG}
+		kustomize edit set image controller=${DOCKER_KUBEDR_IMAGE_NAME_LONG_DOCKERHUB}:${CI_COMMIT_TAG}
 	cd kubedr && kustomize build config/default > kubedr.yaml
 	sed -i 's#<KUBEDR_UTIL_IMAGE_VAL>#${DOCKER_KUBEDRUTIL_IMAGE_NAME_LONG_DOCKERHUB}:${DOCKER_KUBEDRUTIL_IMAGE_TAG}#' kubedr/kubedr.yaml
