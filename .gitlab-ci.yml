@@ -10,7 +10,6 @@ stages:
 - provision
 - apply
 - test
-- release
 - cleanup
 
 # ===== GLOBAL VARIABLES BEGIN =====
