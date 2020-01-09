@@ -238,6 +238,7 @@ kubedr_go:
   artifacts:
     paths:
     - kubedr/kubedr.yaml
+  dependencies: []
   only:
     refs:
     - master
@@ -254,6 +255,7 @@ kubedr_go_dockerhub:
   artifacts:
     paths:
     - kubedr/kubedr.yaml
+  dependencies: []
   only:
     refs:
     - tags
