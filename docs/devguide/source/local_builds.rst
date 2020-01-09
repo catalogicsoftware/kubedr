@@ -9,7 +9,7 @@ will start both its local docker build and operator customization. The resulting
 
 Documentation
 =================
-Since *KubeDR* uses Sphinx to build its docs, first setup a python virtual environment:
+Since *KubeDR* uses Sphinx to build its docs, first setup a Python virtual environment:
 
 .. code-block:: bash
   $ python3 -m venv ~/venv/sphinx
@@ -19,11 +19,13 @@ Since *KubeDR* uses Sphinx to build its docs, first setup a python virtual envir
 To build the *userguide*:
 
 .. code-block:: bash
+
   $ cd docs/devguide
   $ make html
 
 To build the *devguide*: 
 
 .. code-block:: bash
+
   $ cd docs/userguide
   $ make html

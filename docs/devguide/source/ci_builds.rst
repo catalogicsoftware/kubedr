@@ -60,9 +60,8 @@ configuration:
 - For default environment variables accessible in every job, see:
     `Predefined environment variables reference`_ 
 
-- For available key/values to define the pipeline in
-  ``gitlab-ci.yml``, see: `GitLab CI/CD Pipeline Configuration
-  Reference`_ 
+- For available key/values to define the pipeline in ``gitlab-ci.yml``, see: 
+    `GitLab CI/CD Pipeline Configuration Reference`_ 
 
 .. _Predefined environment variables reference: https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
 .. _GitLab CI/CD Pipeline Configuration Reference: https://docs.gitlab.com/ee/ci/yaml/README.html
