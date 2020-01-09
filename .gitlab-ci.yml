@@ -63,6 +63,7 @@ variables:
     command: ["--insecure-registry=docker-registry.devad.catalogic.us:5000"]
   before_script:
   - docker info
+  - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}
   - apk add --no-cache make
   variables:
     DOCKER_HOST: tcp://docker:2375
