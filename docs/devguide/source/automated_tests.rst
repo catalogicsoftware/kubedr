@@ -72,7 +72,7 @@ Once the config data is ready, run the tests as follows:
 
 .. code-block:: bash
 
-  $ cd kcx/tests
+  $ cd tests
   $ ./runtests
 
 Please note that the tests will take noticeable time. This is because
