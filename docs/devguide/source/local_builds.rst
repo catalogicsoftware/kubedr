@@ -10,7 +10,7 @@ To build locally:
 
 This builds two artifacts:
 
-- ``kubedr.yaml``
+- ``kubedr/kubedr.yaml``
 - Docker image ``kubedr:latest``
 
 The image tag can be changed by using env variable
