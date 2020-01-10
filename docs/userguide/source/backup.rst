@@ -2,7 +2,7 @@
  Backup
 ========
 
-- Create a ``BackupLocation`` resource if not already done. 
+- Create a ``BackupLocation`` resource if not already done.
 
 - Create a "secret" containing three pieces of information that are
   required to connect to *etcd*:
@@ -10,7 +10,7 @@
   Since *kube-apiserver* also connects to *etcd*, one can find this
   information by looking at the command line arguments passed to
   *kube-apiserver* process. The options to look at are "etcd-cafile",
-  "etcd-certfile", and "etcd-keyfile". 
+  "etcd-certfile", and "etcd-keyfile".
 
   Once these three files are found, copy the files with the following
   names:
@@ -23,7 +23,7 @@
 
   .. code-block:: bash
 
-    $ kubectl -n kubedr-system create secret generic etcd-creds \ 
+    $ kubectl -n kubedr-system create secret generic etcd-creds \
           --from-file=ca.crt --from-file=client.crt --from-file=client.key
 
   Note that once the secret is created, copies of the files can be
@@ -40,17 +40,17 @@ resource and the description of each field:
   metadata:
     name: test-backup
   spec:
-    destination: local-minio
-  
-    certsDir: /var/lib/minikube/certs
-  
+    destination: remote-minio
+
+    certsDir: /etc/kubernetes/pki
+
     etcdEndpoint: https://127.0.0.1:2379
     etcdCreds: etcd-creds # secret
-  
+
     schedule: "*/10 * * * *"
-  
+
     retainNumBackups: 1
-  
+
 name
     Name of the policy.
 
@@ -75,7 +75,7 @@ etcdCreds
 schedule
     A string in the format of Kubernetes `cronjob`_ resources's
     "schedule" field.
-  
+
     For example, "\*/10 \* \* \* \*` results in backups every 10
     minutes.
 
@@ -85,7 +85,7 @@ retainNumBackups
 
 In addition to above fields, the ``MetadataBackupPolicy`` resource also
 supports a field called *options* which is a map of string keys and
-string values. Currently, only one option is supported. 
+string values. Currently, only one option is supported.
 
 master-node-label-name
     Describes the label that is used to designate master nodes.
@@ -93,7 +93,7 @@ master-node-label-name
     Note that if the label "node-role.kubernetes.io/master" is
     present, there is no need to specify it in the options here. If
     some other name (say "ismasternode") is used, it can be set as
-    follows: 
+    follows:
 
     .. code-block:: yaml
 
