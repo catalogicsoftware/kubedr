@@ -373,7 +373,7 @@ k8s_cleanup:
     ansible-playbook
     -e build_number="${BUILD_NUMBER}"
     k8s-cleanup.yml
-  when: always
+  when: on_failure
 
 s3_cleanup:
   extends: .ansible_template
