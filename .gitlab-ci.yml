@@ -364,7 +364,7 @@ kubedr_logs:
     name: "${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
     paths:
     - "*.log"
-  when: on_failure
+  when: always
 
 k8s_cleanup:
   extends: .ansible_template
