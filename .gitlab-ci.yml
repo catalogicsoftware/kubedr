@@ -10,6 +10,7 @@ stages:
 - provision
 - apply
 - test
+- extract_logs
 - cleanup
 
 # ===== GLOBAL VARIABLES BEGIN =====
@@ -350,6 +351,19 @@ k8s_1.17:
     testenv-setup.yml
   - cd ${PYTEST_PATH_BASE}
   - sh ./runtests
+
+kubedr_logs:
+  extends: .ansible_template
+  stage: extract_logs
+  script:
+  - >
+    ansible-playbook
+    -e build_number="${BUILD_NUMBER}"
+    kubedr-logs.yml
+  artifacts:
+    name: "${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
+    paths:
+    - "*.log"
 
 k8s_cleanup:
   extends: .ansible_template
