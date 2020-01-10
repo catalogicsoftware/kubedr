@@ -7,11 +7,11 @@ levels. The possible levels include:
 
 - controller level.
 
-- Integration tests that verify functionality from user's point of
+- Integration tests that verify functionality from the user's point of
   view.
 
 At present, the project has integration tests that are implemented
-using `pytest`_ framework. 
+using the `pytest`_ framework.
 
 Integration Tests
 =================
@@ -28,7 +28,7 @@ Setup
     $ export PATH=~/venv/kubedr/bin:$PATH
     $ pip install pytest pytest-dependency kubernetes
 
-- Set up a cluster that is accessible by ``kubectl`` command. 
+- Set up a cluster that is accessible by the ``kubectl`` command.
 
 - Install *KubeDR* and all its dependencies. More instructions will be
   provided later. For now, check "User Guide".
@@ -40,7 +40,7 @@ Setup
 Running tests
 -------------
 
-Follow instructions above and make sure ``pytest`` is in ``PATH``. 
+Follow instructions above and make sure ``pytest`` is in ``PATH``.
 
 Since the tests work with an existing cluster, they need to be provided
 some config data (such as *S3* and *etcd* details). Such data is
@@ -67,7 +67,7 @@ Here is a sample:
 If the config data is not provided, the tests will be skipped. If only
 "backuploc" is provided, the tests will add the location and verify
 that the bucket is properly initialized but skip the backup test.
-   
+
 Once the config data is ready, run the tests as follows:
 
 .. code-block:: bash
@@ -93,7 +93,7 @@ The tests need to wait for some resources such as *pods* and
 *cronjobs* to appear. This is done by periodically polling to see if
 the resource shows up. There are two env variables that control how
 many times the polling is done and the interval between each such
-attempt. 
+attempt.
 
 Here are the relevant env variables.
 
@@ -107,7 +107,7 @@ Waiting for Pod to be done
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In many cases, the tests need to wait for a Pod to be done (say,
-backup). The following two env variables control this waiting. 
+backup). The following two env variables control this waiting.
 
 WAIT_FOR_POD_TO_BE_DONE_NUM_ATTEMPTS
     Number of times the Pod status is checked. Default: 5.
