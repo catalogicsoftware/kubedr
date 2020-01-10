@@ -48,6 +48,9 @@ $ sphinx-autobuild source build/html
 - The source for docs should be readable in text form so please keep
   lines short (80 chars). This will also help in checking diffs.
   
+- Before checkin in or submitting a PR, please build locally and
+  confirm that there are no errors or warnings from Sphinx.
+  
 
 
 

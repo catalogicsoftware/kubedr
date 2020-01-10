@@ -3,7 +3,7 @@
 =================
 
 It is very important that developers write automated tests at all
-levels. The possible levels include:
+levels, including:
 
 - controller level.
 
@@ -114,8 +114,6 @@ WAIT_FOR_POD_TO_BE_DONE_NUM_ATTEMPTS
 
 WAIT_FOR_POD_TO_BE_DONE_INTERVAL_SECS
     Interval between each poll attempt. Default: 3 seconds.
-
-
 
 
 .. _pytest: https://docs.pytest.org/en/latest/

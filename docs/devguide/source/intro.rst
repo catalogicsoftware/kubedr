@@ -2,7 +2,7 @@
  Introduction
 ==============
 
-The *Kubedr* project implements data protection for metadata of
+The *Kubedr* project implements data protection for cluster data of
 Kubernetes stored in *etcd*. In addition, certificates can be backed
 up as well but that is optional.
 
@@ -44,5 +44,3 @@ refresh the generated files, use the following build command:
 
 .. _sphinx: http://www.sphinx-doc.org/en/master/index.html
 .. _Read the Docs: https://github.com/readthedocs/sphinx_rtd_theme
-
-

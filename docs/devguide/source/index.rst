@@ -4,14 +4,14 @@
    contain the root `toctree` directive.
 
 Welcome to the KubeDR Developer Guide!
-====================================
+======================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    intro
-   architecture
+   impl
    ci_builds
    local_builds
    automated_tests
