@@ -7,7 +7,7 @@ The documentation for *KubeDR* is divided into two guides
 - [Developer Guide](https://www.catalogicsoftware.com/)
 
 We use [Sphinx](http://www.sphinx-doc.org/en/master/) to format and
-build the documentation. The guides use 
+build the documentation. The guides use
 [Read the Docs](https://github.com/readthedocs/sphinx_rtd_theme)
 theme.
 
@@ -42,15 +42,11 @@ $ sphinx-autobuild source build/html
 
 ## Guidelines
 
-- The format for the documentation is 
+- The format for the documentation is
   [reStructuredText](http://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html).
-  
+
 - The source for docs should be readable in text form so please keep
   lines short (80 chars). This will also help in checking diffs.
   
 - Before checkin in or submitting a PR, please build locally and
   confirm that there are no errors or warnings from Sphinx.
-  
-
-
-
