@@ -22,7 +22,7 @@ first class backup support for the very important Kubernetes cluster
 data stored in *etcd*.
 
 For sure, there are recipes on how to take *etcd* snapshot but the
-*KubeDR* project from 
+*KubeDR* project from
 [Catalogic Software](https://www.catalogicsoftware.com/)
 aims to provide complete end to end data protection for Kubernetes
 data stored in *etcd*. In addition, this project will backup
