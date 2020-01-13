@@ -1,5 +1,6 @@
 
 import pprint
+import subprocess
 import time
 
 from kubernetes import client
@@ -26,6 +27,11 @@ def resources(globalconfig):
     resdata = {"backuploc_creds": backuploc_creds}
 
     yield resdata
+
+    # Capture the state before cleaning up resources. This will help in
+    # debugging.
+    # Assume "kubectl" is in PATH. FIX: Replace with explicit client code.
+    subprocess.call("kubectl -n {} describe all".format(globalconfig.namespace), shell=True)
 
     if "backup_name" in resdata:
         util.ignore_errors(lambda: globalconfig.mbp_api.delete(resdata["backup_name"]))
@@ -58,7 +64,7 @@ def test_creating_backuplocation(globalconfig, resources):
     label_selector='kubedr.type=backuploc-init,kubedr.backuploc={}'.format(backuploc_name)
     pods = kubeclient.wait_for_pod_to_appear(label_selector)
 
-    assert len(pods.items) == 1
+    assert len(pods.items) == 1, "Found pods: ({})".format(", ".join([x.metadata.name for x in pods.items]))
     pod_name = pods.items[0].metadata.name
 
     pod = kubeclient.wait_for_pod_to_be_done(pod_name)
@@ -101,8 +107,24 @@ def test_backup(globalconfig, resources):
 
     pods = kubeclient.wait_for_pod_to_appear(label_selector)
 
-    assert len(pods.items) == 1
-    pod_name = pods.items[0].metadata.name
+    # Since the backup runs every minute and we are waiting for more than a
+    # a minute, sometimes we find that a second backup has already started by the 
+    # time we start checking the status here. To take care of such scenarios,
+    # check the status of the pod whose status is not "Running"
+    found_pod = False
+    for pod in pods.items:
+        if pod.status.phase == "Running":
+            continue
 
-    pod = kubeclient.wait_for_pod_to_be_done(pod_name)
-    assert pod.status.phase == "Succeeded"
+        found_pod = True
+        pod_name = pod.metadata.name
+
+        print("Checking status for pod: {}".format(pod_name))
+        pod = kubeclient.wait_for_pod_to_be_done(pod_name)
+        assert pod.status.phase == "Succeeded"
+
+    if not found_pod:
+        raise Exception("Could not find a completed backup")
+
+
+
