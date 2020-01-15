@@ -108,23 +108,20 @@ def test_backup(globalconfig, resources):
     pods = kubeclient.wait_for_pod_to_appear(label_selector)
 
     # Since the backup runs every minute and we are waiting for more than a
-    # a minute, sometimes we find that a second backup has already started by the 
-    # time we start checking the status here. To take care of such scenarios,
-    # check the status of the pod whose status is not "Running"
-    found_pod = False
-    for pod in pods.items:
-        if pod.status.phase == "Running":
-            continue
+    # a minute, there are several possibilities:
+    #     - No backups started which is extremely unlikely.
+    #     - A single backup started which either finished or is still running.
+    #     - More than one backup started
+    # To take care of all these scenarios, we first look for completed backup
+    # and if we don't find one, we look for a running backup.
 
-        found_pod = True
-        pod_name = pod.metadata.name
+    backup_pod = next((x for x in pods.items if x.status.phase != "Running"), None)
+    if not backup_pod:
+        backup_pod = next((x for x in pods.items if x.status.phase == "Running"), None)
+    if not backup_pod:
+        raise Exception("Could not find a completed or running backup")
 
-        print("Checking status for pod: {}".format(pod_name))
+    if backup_pod.status.phase == "Running":
         pod = kubeclient.wait_for_pod_to_be_done(pod_name)
-        assert pod.status.phase == "Succeeded"
 
-    if not found_pod:
-        raise Exception("Could not find a completed backup")
-
-
-
+    assert backup_pod.status.phase == "Succeeded"
