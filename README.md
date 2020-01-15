@@ -33,7 +33,7 @@ is available.
 
 Here is a list of high level features provided by *KubeDR*. For more
 details, please see
-[User Guide](https://www.catalogicsoftware.com/).
+[User Guide](https://www.catalogicsoftware.com/clab-docs/kubedr/userguide).
 
 - Backup cluster data in *etcd* to any S3 compatible storage.
 - Backup certificates
@@ -60,8 +60,8 @@ We use [Sphinx](http://www.sphinx-doc.org/en/master/) for docs. Source
 for the documentation is in "docs" directory. For built documentation,
 see below:
 
-- [User Guide](https://catalogicsoftware.com/clabs/kubedr/userguide)
-- [Developer Guide](https://catalogicsoftware.com/clabs/kubedr/devguide)
+- [User Guide](https://catalogicsoftware.com/clab-docs/kubedr/userguide)
+- [Developer Guide](https://catalogicsoftware.com/clab-docs/kubedr/devguide)
 
 ## Feedback
 
