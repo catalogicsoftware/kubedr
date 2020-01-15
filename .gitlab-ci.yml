@@ -107,9 +107,12 @@ variables:
   variables:
     PYTEST_PATH_BASE: ${CI_PROJECT_DIR}/tests
     PYTEST_ADDOPTS: "--color=yes"
+  after_script:
+  - cp tests/*.xml ./
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}"
     paths:
+    - ./*.xml
     - tests/*.xml
     reports:
       junit: tests/*.xml
