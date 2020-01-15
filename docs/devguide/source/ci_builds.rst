@@ -4,9 +4,9 @@
 
 .. note::
 
-   For now, CI/CD is done by internal gitlab infrastructure at
-   `Catalogic Software`_. This will continue until we figure out how
-   best to port the logic to github based tooling.
+   For now, CI/CD is done by our internal Gitlab infrastructure at
+   `Catalogic Software`_. We intend to port this logic to a 
+   GitHub/Concourse-centered one in an upcoming release.
 
 The CI build, or 'pipeline' in GitLab terms, runs using the GitLab
 CI/CD toolchain, every 'job' is run in its own pre-determined
@@ -20,7 +20,7 @@ Pipeline Basics
 ===============
 
 All pipeline configuration is written in YAML, all currently
-self-contained within the ``gitlab-ci.yml`` file at the root of the
+self-contained within the ``.gitlab-ci.yml`` file at the root of the
 repository.
 
 Currently the following triggers a pipeline run:
@@ -39,13 +39,14 @@ stage.
 Artifacts
 =========
 
-The three artifacts being produced are:
+In total, there are four artifacts being produced:
 
-  1. `kubedr.yaml` 
-  2. userguide 
-  3. devguide 
+  1. ``kubedr.yaml`` 
+  2. ``kubedr`` Docker Image
+  3. userguide 
+  4. devguide 
 
-Of chief importance is the `kubedr.yaml` file, which holds the bundled
+Of chief importance is the ``kubedr.yaml`` file, which holds the bundled
 operator resource definition for *KubeDR* and is applied against
 Kubernetes masters during the `apply` stage, and tested against in the
 `test` stage. 
@@ -69,7 +70,7 @@ configuration:
   `Predefined environment variables reference`_
 
 - For available key/values to define the pipeline in
-  ``gitlab-ci.yml``, see: `GitLab CI/CD Pipeline Configuration
+  ``.gitlab-ci.yml``, see: `GitLab CI/CD Pipeline Configuration
   Reference`_ 
 
 .. _Predefined environment variables reference: https://docs.gitlab.com/ee/ci/variables/predefined_variables.html
