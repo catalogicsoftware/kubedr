@@ -18,4 +18,24 @@ For data transfer to S3, we currently use a tool called `restic`_. In
 the future, it will be possible to change the specific backup tool in
 a backwards compatible manner.
 
+High level features of KubeDR
+=============================
+
+- Backup of *etcd* data and certificates to S3.
+- Backups are encrypted and deduplicated.
+- Can pause and resume backups.
+- Can configure "retention" that controls how many backups are kept.
+
+Requirements
+============
+
+- Since direct access to etcd is needed, *Kubedr* currently works
+  only for clusters where *etcd* is accessible and a snapshot can be
+  taken. 
+
+  This includes on-prem clusters as well as those in the cloud that
+  are explicitly set up on the compute instances.
+
+- Supported Versions: 1.13 - 1.17.
+
 .. _restic: https://restic.net

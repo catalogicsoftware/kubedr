@@ -13,7 +13,6 @@ Welcome to the KubeDR User Guide!
 
    introduction
    overview
-   requirements
    installation
    configuration
    backup
