@@ -60,8 +60,8 @@ We use [Sphinx](http://www.sphinx-doc.org/en/master/) for docs. Source
 for the documentation is in "docs" directory. For built documentation,
 see below:
 
-- [User Guide](https://www.catalogicsoftware.com/)
-- [Developer Guide](https://www.catalogicsoftware.com/)
+- [User Guide](https://www.catalogicsoftware.com/clab-docs/kubedr/userguide)
+- [Developer Guide](https://www.catalogicsoftware.com/clab-docs/kubedr/devguide)
 
 ## Feedback
 
