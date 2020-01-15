@@ -2,9 +2,8 @@
 
 The documentation for *KubeDR* is divided into two guides
 
-- [User Guide](https://www.catalogicsoftware.com/)
-
-- [Developer Guide](https://www.catalogicsoftware.com/)
+- [User Guide](https://catalogicsoftware.com/clabs/kubedr/userguide)
+- [Developer Guide](https://catalogicsoftware.com/clabs/kubedr/devguide)
 
 We use [Sphinx](http://www.sphinx-doc.org/en/master/) to format and
 build the documentation. The guides use
