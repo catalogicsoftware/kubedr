@@ -40,7 +40,7 @@ manifests: controller-gen
 
 # Run go fmt against code
 fmt:
-	# go fmt ./...
+	go fmt ./...
 
 # Run go vet against code
 vet:
