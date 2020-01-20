@@ -11,7 +11,7 @@ from src.common import kubeclient
 env_config_data = [
     ("wait_for_res_to_appear_num_attempts", 15, int),
     ("wait_for_res_to_appear_interval_secs", 1, int),
-    ("wait_for_pod_to_be_done_num_attempts", 5, int),
+    ("wait_for_pod_to_be_done_num_attempts", 100, int),
     ("wait_for_pod_to_be_done_interval_secs", 3, int)
 ]
 

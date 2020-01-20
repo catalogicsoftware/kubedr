@@ -110,7 +110,7 @@ In many cases, the tests need to wait for a Pod to be done (say,
 backup). The following two env variables control this waiting.
 
 WAIT_FOR_POD_TO_BE_DONE_NUM_ATTEMPTS
-    Number of times the Pod status is checked. Default: 5.
+    Number of times the Pod status is checked. Default: 100.
 
 WAIT_FOR_POD_TO_BE_DONE_INTERVAL_SECS
     Interval between each poll attempt. Default: 3 seconds.

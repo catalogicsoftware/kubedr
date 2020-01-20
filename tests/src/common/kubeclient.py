@@ -50,6 +50,11 @@ class KubedrV1AlphaResource(KubeResourceAPI):
             group=self.group, version=self.version, namespace=self.namespace, plural=self.plural,
             name=name, body=client.V1DeleteOptions())
 
+    def get(self, name):
+        return self.cr_api.get_namespaced_custom_object(
+            group=self.group, version=self.version, namespace=self.namespace, plural=self.plural,
+            name=name)
+
 class SecretAPI(KubeResourceAPI):
     def __init__(self, namespace="default"):
         super().__init__(namespace)

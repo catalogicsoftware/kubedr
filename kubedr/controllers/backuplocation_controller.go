@@ -18,6 +18,8 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -140,29 +142,19 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	// Set the annotation indicating that repo is initialized.
-	// If the update fails for whatever reason, the next reconcile will try
-	// to initialize the repo which will fail with the error "already initialized".
-	// The only sure way is to check the bucket explicitly but the effort
-	// is not worth it. 
-	// For these same reasons, we will ignore any errors in the following
-	// update.
-	if backupLoc.ObjectMeta.Annotations == nil {
-		backupLoc.ObjectMeta.Annotations = make(map[string]string)
-	}
-	backupLoc.ObjectMeta.Annotations[init_annotation] = "true"
-
-	err = r.Update(context.Background(), &backupLoc)
-	if err != nil {
-		log.Error(err, "Error in updating the init annotation, ignoring...")
-	} else {
-		log.Info("Updated init annotation")
-	}
-
 	return ctrl.Result{}, nil
 }
 
 func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) (*corev1.Pod, error) {
+	kubedrUtilImage := os.Getenv("KUBEDR_UTIL_IMAGE")
+	if kubedrUtilImage == "" {
+		// This should really not happen.
+		err := fmt.Errorf("KUBEDR_UTIL_IMAGE is not set")
+		log.Error(err, "")
+		return nil, err
+	}
+	log.V(1).Info(fmt.Sprintf("kubedrUtilImage: %s", kubedrUtilImage))
+
 	s3EndPoint := "s3:" + cr.Spec.Url + "/" + cr.Spec.BucketName
 
 	labels := map[string]string{
@@ -192,8 +184,10 @@ func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger)
 			Containers: []corev1.Container{
 				{
 					Name:  cr.Name + "-init",
-					Image: "restic/restic",
-					Args:  []string{"-r", s3EndPoint, "init"},
+					Image:   kubedrUtilImage,
+					Args: []string {
+						"/usr/local/bin/kubedrutil", "repoinit",
+					},
 					Env: []corev1.EnvVar{
 						{
 							Name: "AWS_ACCESS_KEY",
@@ -212,6 +206,14 @@ func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger)
 							ValueFrom: &corev1.EnvVarSource{
 								SecretKeyRef: &restic_password,
 							},
+						},
+						{
+							Name: "RESTIC_REPO",
+							Value: s3EndPoint,
+						},
+						{
+							Name: "KDR_BACKUPLOC_NAME",
+							Value: cr.Name,
 						},
 					},
 				},

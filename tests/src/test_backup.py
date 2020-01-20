@@ -11,6 +11,18 @@ from common import kubeclient, util
 def timestamp():
     return int(time.time())
 
+def log_state(namespace, resdata):
+    # Capture the state before cleaning up resources. This will help in
+    # debugging.
+    print("Output of 'describe all'")
+    subprocess.call("kubectl -n {} describe all".format(namespace), shell=True)
+    subprocess.call("kubectl -n {} describe backuplocation".format(namespace), shell=True)
+    subprocess.call("kubectl -n {} describe metadatabackuppolicy".format(namespace), shell=True)
+    subprocess.call("kubectl -n {} describe metadatabackuprecord".format(namespace), shell=True)
+    if "backuploc_init_pod" in resdata:
+        print("Output of 'logs'")
+        subprocess.call("kubectl -n {} logs --all-containers {}".format(namespace, resdata["backuploc_init_pod"]), shell=True)
+
 # "resources" is used to store state as resources are being created.
 # This allows us to delete all the resources in one place and also
 # enables deletion even in case of test failures.
@@ -28,24 +40,16 @@ def resources(globalconfig):
 
     yield resdata
 
-    # Capture the state before cleaning up resources. This will help in
-    # debugging.
-    # Assume "kubectl" is in PATH. FIX: Replace with explicit client code.
-    subprocess.call("kubectl -n {} describe all".format(globalconfig.namespace), shell=True)
+    util.ignore_errors(lambda: log_state(globalconfig.namespace, resdata))
 
-    if "backup_name" in resdata:
-        util.ignore_errors(lambda: globalconfig.mbp_api.delete(resdata["backup_name"]))
-
-    if "etcd_creds" in resdata:
-        util.ignore_errors(lambda: globalconfig.secret_api.delete(resdata["etcd_creds"]))
-
-    if "backuploc_name" in resdata:
-        util.ignore_errors(lambda: globalconfig.backuploc_api.delete(resdata["backuploc_name"]))
-
+    util.ignore_errors_pred("backup_name" in resdata, lambda: globalconfig.mbp_api.delete(resdata["backup_name"]))
+    util.ignore_errors_pred("etcd_creds" in resdata, lambda: globalconfig.secret_api.delete(resdata["etcd_creds"]))
+    util.ignore_errors_pred("backuploc_name" in resdata, lambda: globalconfig.backuploc_api.delete(resdata["backuploc_name"]))
     util.ignore_errors(lambda: globalconfig.secret_api.delete(backuploc_creds))
 
 @pytest.mark.dependency()
 def test_creating_backuplocation(globalconfig, resources):
+    init_annotation = "initialized.annotations.kubedr.catalogicsoftware.com"
     endpoint = globalconfig.testenv["backuploc"]["endpoint"]
 
     bucket_name = "{}-{}".format(
@@ -68,7 +72,13 @@ def test_creating_backuplocation(globalconfig, resources):
     pod_name = pods.items[0].metadata.name
 
     pod = kubeclient.wait_for_pod_to_be_done(pod_name)
+    resources["backuploc_init_pod"] = pod_name
     assert pod.status.phase == "Succeeded"
+
+    backup_loc = globalconfig.backuploc_api.get(backuploc_name)
+    assert backup_loc
+
+    assert backup_loc["metadata"]["annotations"][init_annotation] == "true"
 
 @pytest.mark.dependency(depends=["test_creating_backuplocation"])
 def test_backup(globalconfig, resources):
