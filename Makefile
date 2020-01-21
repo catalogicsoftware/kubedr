@@ -43,7 +43,7 @@ go_build:
 	cd kubedr/config/manager && \
 		kustomize edit set image controller=${DOCKER_KUBEDR_IMAGE_NAME_LONG}:${DOCKER_KUBEDR_IMAGE_TAG}
 	cd kubedr && kustomize build config/default > kubedr.yaml
-	sed -i 's#<KUBEDR_UTIL_IMAGE_VAL>#${DOCKER_KUBEDRUTIL_IMAGE_NAME_LONG}:latest#' kubedr/kubedr.yaml
+	sed -i 's#<KUBEDR_UTIL_IMAGE_VAL>#${DOCKER_KUBEDRUTIL_IMAGE_NAME_LONG}:${DOCKER_KUBEDRUTIL_IMAGE_TAG}#' kubedr/kubedr.yaml
 
 go_build_tags:
 	cd kubedr/config/manager && \
