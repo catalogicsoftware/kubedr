@@ -72,7 +72,7 @@ func ignoreErrors(err error) error {
 	return err
 }
 
-func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLocation, status string, errmsg string) error {
+func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLocation, status string, errmsg string) {
 	backupLoc.Status.InitStatus = status
 	if errmsg == "" {
 		// For some reason, empty error string is causing problems even though
@@ -86,10 +86,7 @@ func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLoc
 	r.Log.Info("Updating status...")
 	if err := r.Status().Update(context.Background(), backupLoc); err != nil {
 		r.Log.Error(err, "unable to update backup location status")
-		return err
 	}
-
-	return nil
 }
 
 func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
