@@ -23,9 +23,10 @@ import (
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	//	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -50,25 +51,45 @@ reconciliation request once the object exists, and requeuing in the meantime
 won't help.
 */
 func ignoreNotFound(err error) error {
-	if apierrs.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		return nil
 	}
 	return err
 }
 
-// In case of some errors such as "not found" and "already exist", 
-// there is no point in requeuing the reconcile. 
+// In case of some errors such as "not found" and "already exist",
+// there is no point in requeuing the reconcile.
 // See https://github.com/kubernetes-sigs/controller-runtime/issues/377
 func ignoreErrors(err error) error {
-	if apierrs.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		return nil
 	}
 
-	if apierrs.IsAlreadyExists(err) {
+	if apierrors.IsAlreadyExists(err) {
 		return nil
 	}
 
 	return err
+}
+
+func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLocation, status string, errmsg string) error {
+	backupLoc.Status.InitStatus = status
+	if errmsg == "" {
+		// For some reason, empty error string is causing problems even though
+		// the field is marked "optional" in Status struct.
+		errmsg = "."
+	}
+	backupLoc.Status.InitErrorMessage = errmsg
+
+	backupLoc.Status.InitTime = metav1.Now().String()
+
+	r.Log.Info("Updating status...")
+	if err := r.Status().Update(context.Background(), backupLoc); err != nil {
+		r.Log.Error(err, "unable to update backup location status")
+		return err
+	}
+
+	return nil
 }
 
 func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -77,44 +98,49 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	var backupLoc kubedrv1alpha1.BackupLocation
 	if err := r.Get(ctx, req.NamespacedName, &backupLoc); err != nil {
+		if apierrors.IsNotFound(err) {
+			// we'll ignore not-found errors, since they can't be fixed by an immediate
+			// requeue (we'll need to wait for a new notification).
+			log.Info("BackupLocation (" + req.NamespacedName.Name + ") is not found")
+			return ctrl.Result{}, nil
+		} 
+
 		log.Error(err, "unable to fetch BackupLocation")
-		// we'll ignore not-found errors, since they can't be fixed by an immediate
-		// requeue (we'll need to wait for a new notification).
-		return ctrl.Result{}, ignoreNotFound(err)
+		return ctrl.Result{}, err
 	}
 
 	finalizer := "backuplocation.finalizers.kubedr.catalogicsoftware.com"
 
 	if backupLoc.ObjectMeta.DeletionTimestamp.IsZero() {
-        // The object is not being deleted, so if it does not have our finalizer,
-        // then lets add the finalizer and update the object. This is equivalent
-        // to registering our finalizer.
-        if !containsString(backupLoc.ObjectMeta.Finalizers, finalizer) {
-            backupLoc.ObjectMeta.Finalizers = append(backupLoc.ObjectMeta.Finalizers, finalizer)
-            if err := r.Update(context.Background(), &backupLoc); err != nil {
-                return ctrl.Result{}, err
-            }
-        }
-    } else {
-        // The object is being deleted
-        if containsString(backupLoc.ObjectMeta.Finalizers, finalizer) {
-            // our finalizer is present, handle any pre-deletion logic here.
-
-            // remove our finalizer from the list and update it.
-            backupLoc.ObjectMeta.Finalizers = removeString(backupLoc.ObjectMeta.Finalizers, finalizer)
- 
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then lets add the finalizer and update the object. This is equivalent
+		// to registering our finalizer.
+		if !containsString(backupLoc.ObjectMeta.Finalizers, finalizer) {
+			backupLoc.ObjectMeta.Finalizers = append(backupLoc.ObjectMeta.Finalizers, finalizer)
 			if err := r.Update(context.Background(), &backupLoc); err != nil {
-                return ctrl.Result{}, err
-            }
-        }
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		// The object is being deleted
+		if containsString(backupLoc.ObjectMeta.Finalizers, finalizer) {
+			// our finalizer is present, handle any pre-deletion logic here.
+
+			// remove our finalizer from the list and update it.
+			backupLoc.ObjectMeta.Finalizers = removeString(backupLoc.ObjectMeta.Finalizers, finalizer)
+
+			if err := r.Update(context.Background(), &backupLoc); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
 
 		// Nothing more to do for DELETE.
-        return ctrl.Result{}, nil
-    }
+		return ctrl.Result{}, nil
+	}
 
-	// Now, make sure spec matches the status of world.
-
-	// Check annotations to see if repo is already initialized. 
+	// Check annotations to see if repo is already initialized.
+	// Ideally, we should check the repo itself to confirm that it is
+	// initialized, instead of depending on annotation.
 	init_annotation := "initialized.annotations.kubedr.catalogicsoftware.com"
 
 	initialized, exists := backupLoc.ObjectMeta.Annotations[init_annotation]
@@ -122,11 +148,21 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		// No need to initialize the repo.
 		log.Info("Repo is already initialized")
 		return ctrl.Result{}, nil
-	} 
+	}
 
-	// Initialize the repo and set the annotation.
+	// Check if init pod is already created and if so, return.
+	var pod corev1.Pod
+	if err := r.Get(ctx,
+		types.NamespacedName{Namespace: req.Namespace, Name: backupLoc.Name + "-init-pod"},
+		&pod); err == nil {
 
-	initPod, err := createResticRepoInitPod(&backupLoc, log)
+		return ctrl.Result{}, nil
+	}
+
+	r.setStatus(&backupLoc, "Initializing", "")
+
+	// Initialize the repo.
+	initPod, err := buildResticRepoInitPod(&backupLoc, log)
 	if err != nil {
 		log.Error(err, "Error in creating init pod")
 		return ctrl.Result{}, err
@@ -139,13 +175,21 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log.Info("Creating a new Pod", "Pod.Namespace", initPod.Namespace, "Pod.Name", initPod.Name)
 	err = r.Create(ctx, initPod)
 	if err != nil {
-		return ctrl.Result{}, err
+		// Do nothing if pod creation failed because there is already an existing
+		// init pod. This check prevents cycles.
+		if apierrors.IsAlreadyExists(err) {
+			log.Info("Creation of init pod failed because it already exists")
+			r.setStatus(&backupLoc, "Failed", "Init pod already exists")
+		} else {
+			r.setStatus(&backupLoc, "Failed", err.Error())
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) (*corev1.Pod, error) {
+func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) (*corev1.Pod, error) {
 	kubedrUtilImage := os.Getenv("KUBEDR_UTIL_IMAGE")
 	if kubedrUtilImage == "" {
 		// This should really not happen.
@@ -158,7 +202,7 @@ func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger)
 	s3EndPoint := "s3:" + cr.Spec.Url + "/" + cr.Spec.BucketName
 
 	labels := map[string]string{
-		"kubedr.type": "backuploc-init",
+		"kubedr.type":      "backuploc-init",
 		"kubedr.backuploc": cr.Name,
 	}
 
@@ -184,8 +228,8 @@ func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger)
 			Containers: []corev1.Container{
 				{
 					Name:  cr.Name + "-init",
-					Image:   kubedrUtilImage,
-					Args: []string {
+					Image: kubedrUtilImage,
+					Args: []string{
 						"/usr/local/bin/kubedrutil", "repoinit",
 					},
 					Env: []corev1.EnvVar{
@@ -208,11 +252,11 @@ func createResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger)
 							},
 						},
 						{
-							Name: "RESTIC_REPO",
+							Name:  "RESTIC_REPO",
 							Value: s3EndPoint,
 						},
 						{
-							Name: "KDR_BACKUPLOC_NAME",
+							Name:  "KDR_BACKUPLOC_NAME",
 							Value: cr.Name,
 						},
 					},

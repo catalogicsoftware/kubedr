@@ -28,7 +28,7 @@ type BackupLocationSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// kubebuilder:validation:MinLength:=1
-	Url        string `json:"url"`
+	Url string `json:"url"`
 	// kubebuilder:validation:MinLength:=1
 	BucketName string `json:"bucketName"`
 
@@ -41,9 +41,16 @@ type BackupLocationSpec struct {
 type BackupLocationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	InitStatus string `json:"initStatus,omitempty"`
+
+	// +kubebuilder:validation:Optional
+	InitErrorMessage string `json:"initErrorMessage,omitempty"`
+
+	InitTime string `json:"initTime,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // BackupLocation is the Schema for the backuplocations API
 type BackupLocation struct {

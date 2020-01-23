@@ -22,14 +22,14 @@ import (
 	"os"
 	"time"
 
-	corev1 "k8s.io/api/core/v1"
+	"github.com/go-logr/logr"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -63,31 +63,31 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 	finalizer := "metadata-backup-policy.finalizers.kubedr.catalogicsoftware.com"
 
 	if policy.ObjectMeta.DeletionTimestamp.IsZero() {
-        // The object is not being deleted, so if it does not have our finalizer,
-        // then lets add the finalizer and update the object. This is equivalent
-        // to registering our finalizer.
-        if !containsString(policy.ObjectMeta.Finalizers, finalizer) {
-            policy.ObjectMeta.Finalizers = append(policy.ObjectMeta.Finalizers, finalizer)
-            if err := r.Update(context.Background(), &policy); err != nil {
-                return ctrl.Result{}, err
-            }
-        }
-    } else {
-        // The object is being deleted
-        if containsString(policy.ObjectMeta.Finalizers, finalizer) {
-            // our finalizer is present, handle any pre-deletion logic here.
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then lets add the finalizer and update the object. This is equivalent
+		// to registering our finalizer.
+		if !containsString(policy.ObjectMeta.Finalizers, finalizer) {
+			policy.ObjectMeta.Finalizers = append(policy.ObjectMeta.Finalizers, finalizer)
+			if err := r.Update(context.Background(), &policy); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		// The object is being deleted
+		if containsString(policy.ObjectMeta.Finalizers, finalizer) {
+			// our finalizer is present, handle any pre-deletion logic here.
 
-            // remove our finalizer from the list and update it.
-            policy.ObjectMeta.Finalizers = removeString(policy.ObjectMeta.Finalizers, finalizer)
+			// remove our finalizer from the list and update it.
+			policy.ObjectMeta.Finalizers = removeString(policy.ObjectMeta.Finalizers, finalizer)
 
 			if err := r.Update(context.Background(), &policy); err != nil {
-                return ctrl.Result{}, err
-            }
-        }
+				return ctrl.Result{}, err
+			}
+		}
 
 		// Nothing more to do for DELETE.
-        return ctrl.Result{}, nil
-    }
+		return ctrl.Result{}, nil
+	}
 
 	// Now, make sure spec matches the status of world.
 
@@ -171,22 +171,22 @@ func (r *MetadataBackupPolicyReconciler) SetupWithManager(mgr ctrl.Manager) erro
 
 // Helper functions to check and remove string from a slice of strings.
 func containsString(slice []string, s string) bool {
-    for _, item := range slice {
-        if item == s {
-            return true
-        }
-    }
-    return false
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
 }
 
 func removeString(slice []string, s string) (result []string) {
-    for _, item := range slice {
-        if item == s {
-            continue
-        }
-        result = append(result, item)
-    }
-    return
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return
 }
 
 func (r *MetadataBackupPolicyReconciler) waitForCreatedResource(namespace string, name string) {
@@ -208,20 +208,20 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 	labelName := "node-role.kubernetes.io/master"
 
 	if policy.Spec.Options == nil {
-		return labelName;
+		return labelName
 	}
 
 	key := "master-node-label-name"
 
 	val, exists := policy.Spec.Options[key]
 	if !exists {
-		return labelName;
+		return labelName
 	}
 
 	if len(val) == 0 {
 		log.Error(fmt.Errorf("Invalid value for master node label name in config map (%s)",
 			policy.Spec.Options), "")
-		return labelName;
+		return labelName
 	}
 
 	log.Info(fmt.Sprintf("master node label name in config map (%s): %s", policy.Spec.Options, val))
@@ -229,11 +229,11 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 	return val
 }
 
-func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.MetadataBackupPolicy,
+func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.MetadataBackupPolicy,
 	namespace string, cronJobName string, log logr.Logger) (*batchv1beta1.CronJob, error) {
 
 	labels := map[string]string{
-		"kubedr.type": "backup",
+		"kubedr.type":          "backup",
 		"kubedr.backup-policy": cr.Name,
 	}
 
@@ -269,70 +269,70 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 	restic_password.Key = "restic_repo_password"
 
 	targetDirVolume := corev1.Volume{Name: "target-dir"}
-	targetDirVolume.EmptyDir = &corev1.EmptyDirVolumeSource {}
+	targetDirVolume.EmptyDir = &corev1.EmptyDirVolumeSource{}
 
 	etcdCredsVolume := corev1.Volume{Name: "etcd-creds"}
-	etcdCredsVolume.Secret = &corev1.SecretVolumeSource {
+	etcdCredsVolume.Secret = &corev1.SecretVolumeSource{
 		SecretName: cr.Spec.EtcdCreds,
 	}
 
-	volumes := [] corev1.Volume {
+	volumes := []corev1.Volume{
 		targetDirVolume,
 		etcdCredsVolume,
 	}
 
-	env := []corev1.EnvVar {
+	env := []corev1.EnvVar{
 		{
 			Name: "AWS_ACCESS_KEY",
-			ValueFrom: &corev1.EnvVarSource {
+			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &access_key,
 			},
 		},
 		{
 			Name: "AWS_SECRET_KEY",
-			ValueFrom: &corev1.EnvVarSource {
+			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &secret_key,
 			},
 		},
 		{
 			Name: "RESTIC_PASSWORD",
-			ValueFrom: &corev1.EnvVarSource {
+			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &restic_password,
 			},
 		},
 		{
-			Name: "KDR_POLICY_NAME",
+			Name:  "KDR_POLICY_NAME",
 			Value: cr.Name,
 		},
 		{
-			Name: "ETCD_ENDPOINT",
+			Name:  "ETCD_ENDPOINT",
 			Value: cr.Spec.EtcdEndpoint,
 		},
 		{
-			Name: "ETCD_CREDS_DIR",
+			Name:  "ETCD_CREDS_DIR",
 			Value: "/etcd_creds",
 		},
 		{
-			Name: "ETCD_SNAP_PATH",
+			Name:  "ETCD_SNAP_PATH",
 			Value: "/data/etcd-snapshot.db",
 		},
 		{
-			Name: "RESTIC_REPO",
+			Name:  "RESTIC_REPO",
 			Value: s3EndPoint,
 		},
 		{
-			Name: "BACKUP_SRC",
+			Name:  "BACKUP_SRC",
 			Value: "/data",
 		},
 	}
 
-	volumeMounts := []corev1.VolumeMount {
+	volumeMounts := []corev1.VolumeMount{
 		{
-			Name: "target-dir",
+			Name:      "target-dir",
 			MountPath: "/data",
 		},
 		{
-			Name: "etcd-creds",
+			Name:      "etcd-creds",
 			MountPath: "/etcd_creds",
 		},
 	}
@@ -342,60 +342,60 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 	if cr.Spec.CertsDir != "" {
 		var t corev1.HostPathType = "Directory"
 		certsDirVolume := corev1.Volume{Name: "certs-dir"}
-		certsDirVolume.HostPath = &corev1.HostPathVolumeSource {
+		certsDirVolume.HostPath = &corev1.HostPathVolumeSource{
 			Path: cr.Spec.CertsDir,
 			Type: &t,
 		}
 
 		volumes = append(volumes, certsDirVolume)
-		volumeMounts = append(volumeMounts, corev1.VolumeMount {Name: "certs-dir", MountPath: "/certs_dir"})
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{Name: "certs-dir", MountPath: "/certs_dir"})
 
 		// FIX: Shouldn't hard code /data here. It ties too closely with the
 		// code in the backup container.
-		env = append(env, corev1.EnvVar {Name: "CERTS_DEST_DIR", Value: "/data/certificates"})
-		env = append(env, corev1.EnvVar {Name: "CERTS_SRC_DIR", Value: "/certs_dir"})
+		env = append(env, corev1.EnvVar{Name: "CERTS_DEST_DIR", Value: "/data/certificates"})
+		env = append(env, corev1.EnvVar{Name: "CERTS_SRC_DIR", Value: "/certs_dir"})
 	}
 
 	masterNodeLabelName := r.getMasterNodeLabelName(cr, log)
 
-	return &batchv1beta1.CronJob {
-		ObjectMeta: metav1.ObjectMeta {
-			Name: cronJobName,
+	return &batchv1beta1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cronJobName,
 			Namespace: cr.Namespace,
-			Labels: labels,
+			Labels:    labels,
 		},
 
-		Spec: batchv1beta1.CronJobSpec {
+		Spec: batchv1beta1.CronJobSpec{
 			ConcurrencyPolicy: "Forbid",
-			Schedule: cr.Spec.Schedule,
-			Suspend: cr.Spec.Suspend,
+			Schedule:          cr.Spec.Schedule,
+			Suspend:           cr.Spec.Suspend,
 
-			JobTemplate: batchv1beta1.JobTemplateSpec {
-				ObjectMeta: metav1.ObjectMeta {
-					Name: cr.Name + "-backup-job",
+			JobTemplate: batchv1beta1.JobTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      cr.Name + "-backup-job",
 					Namespace: cr.Namespace,
 				},
-				Spec: batchv1.JobSpec {
+				Spec: batchv1.JobSpec{
 					// TODO: Set backoffLimit to 2.
-					Template: corev1.PodTemplateSpec {
-						ObjectMeta: metav1.ObjectMeta {
-							Name: cr.Name + "-backup-pod-template",
+					Template: corev1.PodTemplateSpec{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      cr.Name + "-backup-pod-template",
 							Namespace: cr.Namespace,
-							Labels: labels,
+							Labels:    labels,
 						},
-						Spec: corev1.PodSpec {
+						Spec: corev1.PodSpec{
 							RestartPolicy: "Never",
-							HostNetwork: true,
+							HostNetwork:   true,
 
 							// Make sure that backup pod runs on the master.
-							Affinity: &corev1.Affinity {
-								NodeAffinity: &corev1.NodeAffinity {
-									RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector {
-										NodeSelectorTerms: [] corev1.NodeSelectorTerm {
-											corev1.NodeSelectorTerm {
-												MatchExpressions: [] corev1.NodeSelectorRequirement {
-													corev1.NodeSelectorRequirement {
-														Key: masterNodeLabelName,
+							Affinity: &corev1.Affinity{
+								NodeAffinity: &corev1.NodeAffinity{
+									RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+										NodeSelectorTerms: []corev1.NodeSelectorTerm{
+											corev1.NodeSelectorTerm{
+												MatchExpressions: []corev1.NodeSelectorRequirement{
+													corev1.NodeSelectorRequirement{
+														Key:      masterNodeLabelName,
 														Operator: "Exists",
 													},
 												},
@@ -406,23 +406,23 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr  *kubedrv1alpha1.
 							},
 
 							// Tolerate "NoSchedule" taint on master nodes.
-							Tolerations: [] corev1.Toleration {
-								corev1.Toleration {
+							Tolerations: []corev1.Toleration{
+								corev1.Toleration{
 									Operator: "Exists",
-									Effect: "NoSchedule",
+									Effect:   "NoSchedule",
 								},
 							},
 
 							Volumes: volumes,
 
-							Containers: []corev1.Container {
+							Containers: []corev1.Container{
 								{
-									Name: cr.Name + "-kcx-backup",
-									Image:   kubedrUtilImage,
+									Name:         cr.Name + "-kcx-backup",
+									Image:        kubedrUtilImage,
 									VolumeMounts: volumeMounts,
-									Env: env,
+									Env:          env,
 
-									Args: []string {
+									Args: []string{
 										"sh", "/usr/local/bin/kubedrutil.sh",
 									},
 								},
