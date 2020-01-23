@@ -23,16 +23,17 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// +kubebuilder:subresource:status
 // MetadataBackupRecordSpec defines the desired state of MetadataBackupRecord
 type MetadataBackupRecordSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// kubebuilder:validation:MinLength:=1
-    SnapshotId string `json:"snapshotId"`
+	SnapshotId string `json:"snapshotId"`
 
 	// kubebuilder:validation:MinLength:=1
-    Policy string `json:"policy"`
+	Policy string `json:"policy"`
 }
 
 // MetadataBackupRecordStatus defines the observed state of MetadataBackupRecord

@@ -21,11 +21,11 @@ import (
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // log is for logging in this package.
@@ -111,7 +111,6 @@ func (r *MetadataBackupPolicy) validatePolicy() error {
 		schema.GroupKind{Group: "kubedr.catalogicsoftware.com/v1alpha1", Kind: "MetadataBackupPolicy"},
 		r.Name, allErrs)
 }
-
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *MetadataBackupPolicy) ValidateCreate() error {

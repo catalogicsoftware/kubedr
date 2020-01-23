@@ -23,6 +23,7 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// +kubebuilder:subresource:status
 // MetadataBackupPolicySpec defines the desired state of MetadataBackupPolicy
 type MetadataBackupPolicySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -34,11 +35,11 @@ type MetadataBackupPolicySpec struct {
 
 	// Optional. If not provided, certificates will not be backed up.
 	// +kubebuilder:validation:Optional
-    CertsDir string `json:"certsDir,omitempty"`
+	CertsDir string `json:"certsDir,omitempty"`
 
 	// +kubebuilder:validation:Optional
 	// If not provided, "https://127.0.0.1:2379" will be used.
-    EtcdEndpoint string `json:"etcdEndpoint,omitempty"`
+	EtcdEndpoint string `json:"etcdEndpoint,omitempty"`
 
 	// Name of the "secret" containing etcd certificates.
 	// +kubebuilder:validation:Optional
@@ -50,9 +51,9 @@ type MetadataBackupPolicySpec struct {
 	Schedule string `json:"schedule"`
 
 	// Refers to name of a configmap containing list of key=value pairs.
-    // Options string `json:"options"`
+	// Options string `json:"options"`
 	// +kubebuilder:validation:Optional
-    Options map[string]string `json:"options,omitempty"`
+	Options map[string]string `json:"options,omitempty"`
 
 	// Props map[string]string `json:"props"`
 

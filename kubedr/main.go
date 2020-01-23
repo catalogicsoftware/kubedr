@@ -107,11 +107,11 @@ func main() {
 		os.Exit(1)
 	}
 	/*
-	if err = (&kubedrv1alpha1.MetadataBackupRecord{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "MetadataBackupRecord")
-		os.Exit(1)
-	}
-    */
+		if err = (&kubedrv1alpha1.MetadataBackupRecord{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "MetadataBackupRecord")
+			os.Exit(1)
+		}
+	*/
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

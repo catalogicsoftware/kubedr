@@ -1,3 +1,5 @@
+
+---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -13,6 +15,8 @@ spec:
     plural: backuplocations
     singular: backuplocation
   scope: ""
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: BackupLocation is the Schema for the backuplocations API
@@ -48,6 +52,17 @@ spec:
           type: object
         status:
           description: BackupLocationStatus defines the observed state of BackupLocation
+          properties:
+            initErrorMessage:
+              type: string
+            initStatus:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              type: string
+          required:
+          - initErrorMessage
+          - initStatus
           type: object
       type: object
   version: v1alpha1
