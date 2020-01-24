@@ -1,3 +1,7 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/catalogicsoftware/kubedr)](https://goreportcard.com/report/github.com/catalogicsoftware/kubedr)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
+
 # Kubernetes Cluster Backup
 
 Welcome to KubeDR!
