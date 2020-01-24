@@ -57,7 +57,7 @@ func ignoreNotFound(err error) error {
 	return err
 }
 
-// In case of some errors such as "not found" and "already exist",
+// In case of some errors such as "not found" and "already exists",
 // there is no point in requeuing the reconcile.
 // See https://github.com/kubernetes-sigs/controller-runtime/issues/377
 func ignoreErrors(err error) error {
@@ -89,6 +89,7 @@ func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLoc
 	}
 }
 
+// The main reconcile entry point called by the framework.
 func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("backuplocation", req.NamespacedName)
@@ -100,7 +101,7 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 			// requeue (we'll need to wait for a new notification).
 			log.Info("BackupLocation (" + req.NamespacedName.Name + ") is not found")
 			return ctrl.Result{}, nil
-		} 
+		}
 
 		log.Error(err, "unable to fetch BackupLocation")
 		return ctrl.Result{}, err
@@ -138,9 +139,9 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	// Check annotations to see if repo is already initialized.
 	// Ideally, we should check the repo itself to confirm that it is
 	// initialized, instead of depending on annotation.
-	init_annotation := "initialized.annotations.kubedr.catalogicsoftware.com"
+	initAnnotation := "initialized.annotations.kubedr.catalogicsoftware.com"
 
-	initialized, exists := backupLoc.ObjectMeta.Annotations[init_annotation]
+	initialized, exists := backupLoc.ObjectMeta.Annotations[initAnnotation]
 	if exists && (initialized == "true") {
 		// No need to initialize the repo.
 		log.Info("Repo is already initialized")
@@ -203,17 +204,17 @@ func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) 
 		"kubedr.backuploc": cr.Name,
 	}
 
-	access_key := corev1.SecretKeySelector{}
-	access_key.Name = cr.Spec.Credentials
-	access_key.Key = "access_key"
+	accessKey := corev1.SecretKeySelector{}
+	accessKey.Name = cr.Spec.Credentials
+	accessKey.Key = "access_key"
 
-	secret_key := corev1.SecretKeySelector{}
-	secret_key.Name = cr.Spec.Credentials
-	secret_key.Key = "secret_key"
+	secretKey := corev1.SecretKeySelector{}
+	secretKey.Name = cr.Spec.Credentials
+	secretKey.Key = "secret_key"
 
-	restic_password := corev1.SecretKeySelector{}
-	restic_password.Name = cr.Spec.Credentials
-	restic_password.Key = "restic_repo_password"
+	resticPassword := corev1.SecretKeySelector{}
+	resticPassword.Name = cr.Spec.Credentials
+	resticPassword.Key = "restic_repo_password"
 
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -233,19 +234,19 @@ func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) 
 						{
 							Name: "AWS_ACCESS_KEY",
 							ValueFrom: &corev1.EnvVarSource{
-								SecretKeyRef: &access_key,
+								SecretKeyRef: &accessKey,
 							},
 						},
 						{
 							Name: "AWS_SECRET_KEY",
 							ValueFrom: &corev1.EnvVarSource{
-								SecretKeyRef: &secret_key,
+								SecretKeyRef: &secretKey,
 							},
 						},
 						{
 							Name: "RESTIC_PASSWORD",
 							ValueFrom: &corev1.EnvVarSource{
-								SecretKeyRef: &restic_password,
+								SecretKeyRef: &resticPassword,
 							},
 						},
 						{
@@ -264,6 +265,7 @@ func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) 
 	}, nil
 }
 
+// Hooks up this controller with the manager.
 func (r *BackupLocationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubedrv1alpha1.BackupLocation{}).
