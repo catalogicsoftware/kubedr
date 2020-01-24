@@ -54,7 +54,7 @@ type MetadataBackupRecordReconciler struct {
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuprecords,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuprecords/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=create;get;list;update;patch;delete;watch
-
+// The main reconcile entry point called by the framework.
 func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("metadatabackuprecord", req.NamespacedName)
@@ -211,6 +211,7 @@ func (r *MetadataBackupRecordReconciler) cleanupOldSnapDeletionPods(namespace st
 	}
 }
 
+// Hooks up this controller with the manager.
 func (r *MetadataBackupRecordReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&kubedrv1alpha1.MetadataBackupRecord{},
 		"policy", func(rawObj runtime.Object) []string {
@@ -232,17 +233,17 @@ func createResticSnapDeletePod(backupLocation *kubedrv1alpha1.BackupLocation, lo
 
 	s3EndPoint := "s3:" + backupLocation.Spec.Url + "/" + backupLocation.Spec.BucketName
 
-	access_key := corev1.SecretKeySelector{}
-	access_key.Name = backupLocation.Spec.Credentials
-	access_key.Key = "access_key"
+	accessKey := corev1.SecretKeySelector{}
+	accessKey.Name = backupLocation.Spec.Credentials
+	accessKey.Key = "access_key"
 
-	secret_key := corev1.SecretKeySelector{}
-	secret_key.Name = backupLocation.Spec.Credentials
-	secret_key.Key = "secret_key"
+	secretKey := corev1.SecretKeySelector{}
+	secretKey.Name = backupLocation.Spec.Credentials
+	secretKey.Key = "secret_key"
 
-	restic_password := corev1.SecretKeySelector{}
-	restic_password.Name = backupLocation.Spec.Credentials
-	restic_password.Key = "restic_repo_password"
+	resticPassword := corev1.SecretKeySelector{}
+	resticPassword.Name = backupLocation.Spec.Credentials
+	resticPassword.Key = "restic_repo_password"
 
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -263,19 +264,19 @@ func createResticSnapDeletePod(backupLocation *kubedrv1alpha1.BackupLocation, lo
 						{
 							Name: "AWS_ACCESS_KEY",
 							ValueFrom: &corev1.EnvVarSource{
-								SecretKeyRef: &access_key,
+								SecretKeyRef: &accessKey,
 							},
 						},
 						{
 							Name: "AWS_SECRET_KEY",
 							ValueFrom: &corev1.EnvVarSource{
-								SecretKeyRef: &secret_key,
+								SecretKeyRef: &secretKey,
 							},
 						},
 						{
 							Name: "RESTIC_PASSWORD",
 							ValueFrom: &corev1.EnvVarSource{
-								SecretKeyRef: &restic_password,
+								SecretKeyRef: &resticPassword,
 							},
 						},
 					},

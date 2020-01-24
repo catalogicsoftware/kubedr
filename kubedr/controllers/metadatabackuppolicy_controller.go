@@ -43,21 +43,116 @@ type MetadataBackupPolicyReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+// Implements logic to handle a new policy.
+func (r *MetadataBackupPolicyReconciler) newPolicy(policy *kubedrv1alpha1.MetadataBackupPolicy,
+	namespace string, cronJobName string) (ctrl.Result, error) {
+
+	backupCronjob, err := r.buildBackupCronjob(policy, namespace, cronJobName)
+	if err != nil {
+		r.Log.Error(err, "Error in creating backup cronjob")
+		return ctrl.Result{}, err
+	}
+
+	// Set Policy as owner of cronjob so that when policy is deleted,
+	// cronjob is cleaned up automatically.
+	if err := ctrl.SetControllerReference(policy, backupCronjob, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	r.Log.Info("Creating a new Cronjob", "Namespace", backupCronjob.Namespace, "Name", backupCronjob.Name)
+	err = r.Create(context.Background(), backupCronjob)
+	if err != nil {
+		r.Log.Info(err.Error())
+		return ctrl.Result{}, ignoreErrors(err)
+	}
+
+	if err == nil {
+		// We have seen a second reconcile request immediately after return from
+		// here and add to it the fact that Get() is failing with "not found" errors
+		// even though the resource has just been created (Get reads from local cache).
+		// So make sure cache is updated before returning from here.
+		//
+		// We are just waiting for some time. Does it ensure that cache is updated?
+		// Need to know more about cache semantics.
+		r.waitForCreatedResource(namespace, cronJobName)
+	}
+
+	return ctrl.Result{}, err
+}
+
+// Policy and Cronjob already exist. Make any required changes to the cronjob.
+// If retention is changed, there is nothing to be done here. The retention
+// logic in in MetadataBackupRecord controller.
+func (r *MetadataBackupPolicyReconciler) processUpdate(policy *kubedrv1alpha1.MetadataBackupPolicy,
+	cronJob *batchv1beta1.CronJob) (ctrl.Result, error) {
+
+	updateCron := false
+
+	if cronJob.Spec.Schedule != policy.Spec.Schedule {
+		r.Log.Info("Schedule changed")
+		cronJob.Spec.Schedule = policy.Spec.Schedule
+		updateCron = true
+	}
+
+	if cronJob.Spec.Suspend != policy.Spec.Suspend {
+		r.Log.V(1).Info("suspend status changed")
+		cronJob.Spec.Suspend = policy.Spec.Suspend
+		updateCron = true
+	}
+
+	if updateCron {
+		if err := r.Update(context.Background(), cronJob); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	return ctrl.Result{}, nil
+}
+
+// Process spec and make sure it matches status of the world.
+func (r *MetadataBackupPolicyReconciler) processSpec(policy *kubedrv1alpha1.MetadataBackupPolicy,
+	namespace string) (ctrl.Result, error) {
+
+	var cronJob batchv1beta1.CronJob
+	cronJobName := policy.Name + "-backup-cronjob"
+
+	// I have seen Get return "not found" and then the following
+	// create fail with "already exists" error.
+	if err := r.Get(context.Background(), types.NamespacedName{Namespace: namespace, Name: cronJobName},
+		&cronJob); err != nil {
+
+		if !apierrors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+
+		return r.newPolicy(policy, namespace, cronJobName)
+	}
+
+	// The policy exists. We need to check and make any required changes to cronJob.
+	return r.processUpdate(policy, &cronJob)
+}
+
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuppolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuppolicies/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=create;get;list;update;patch;delete;watch
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=create;get;list;update;patch;delete;watch
-
+// The main reconcile entry point called by the framework.
 func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("metadatabackuppolicy", req.NamespacedName)
+	r.Log = log
 
 	var policy kubedrv1alpha1.MetadataBackupPolicy
 	if err := r.Get(ctx, req.NamespacedName, &policy); err != nil {
+		if apierrors.IsNotFound(err) {
+			// we'll ignore not-found errors, since they can't be fixed by an immediate
+			// requeue (we'll need to wait for a new notification).
+			log.Info("MetadataBackupPolicy (" + req.NamespacedName.Name + ") is not found")
+			return ctrl.Result{}, nil
+		}
+
 		log.Error(err, "unable to fetch MetadataBackupPolicy")
-		// we'll ignore not-found errors, since they can't be fixed by an immediate
-		// requeue (we'll need to wait for a new notification).
-		return ctrl.Result{}, ignoreNotFound(err)
+		return ctrl.Result{}, err
 	}
 
 	finalizer := "metadata-backup-policy.finalizers.kubedr.catalogicsoftware.com"
@@ -89,79 +184,10 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		return ctrl.Result{}, nil
 	}
 
-	// Now, make sure spec matches the status of world.
-
-	var cronJob batchv1beta1.CronJob
-	cronJobName := policy.Name + "-backup-cronjob"
-
-	// I have seen Get return "not found" and then the following
-	// create fail with "already exists" error.
-
-	if err := r.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: cronJobName}, &cronJob); err != nil {
-		if !apierrors.IsNotFound(err) {
-			return ctrl.Result{}, err
-		}
-
-		// Cronjob doesn't exist, create one and return.
-		backupCronjob, err := r.buildBackupCronjob(&policy, req.Namespace, cronJobName, log)
-		if err != nil {
-			log.Error(err, "Error in creating backup cronjob")
-			return ctrl.Result{}, err
-		}
-
-		// Set Policy as owner of cronjob so that when policy is deleted,
-		// cronjob is cleaned up automatically.
-		if err := ctrl.SetControllerReference(&policy, backupCronjob, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-
-		log.Info("Creating a new Cronjob", "Namespace", backupCronjob.Namespace, "Name", backupCronjob.Name)
-		err = r.Create(ctx, backupCronjob)
-		if err != nil {
-			log.Info(err.Error())
-			return ctrl.Result{}, ignoreErrors(err)
-		}
-
-		if err == nil {
-			// We have seen a second reconcile request immediately after return from
-			// here and add to it the fact that Get() is failing with "not found" errors
-			// even though the resource has just been created (Get reads from local cache).
-			// So make sure cache is updated before returning from here.
-			//
-			// We are just waiting for some time. Does it ensure that cache is updated?
-			// Need to know more about cache semantics.
-			r.waitForCreatedResource(req.Namespace, cronJobName)
-		}
-
-		return ctrl.Result{}, err
-	}
-
-	// cron job exists, check if we need to make any changes to its spec.
-	// For now, only support update of schedule.
-
-	updateCron := false
-
-	if cronJob.Spec.Schedule != policy.Spec.Schedule {
-		log.Info("Schedule changed")
-		cronJob.Spec.Schedule = policy.Spec.Schedule
-		updateCron = true
-	}
-
-	if cronJob.Spec.Suspend != policy.Spec.Suspend {
-		log.V(1).Info("suspend status changed")
-		cronJob.Spec.Suspend = policy.Spec.Suspend
-		updateCron = true
-	}
-
-	if updateCron {
-		if err := r.Update(ctx, &cronJob); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-
-	return ctrl.Result{}, nil
+	return r.processSpec(&policy, req.Namespace)
 }
 
+// Hooks up this controller with the manager.
 func (r *MetadataBackupPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubedrv1alpha1.MetadataBackupPolicy{}).
@@ -202,9 +228,7 @@ func (r *MetadataBackupPolicyReconciler) waitForCreatedResource(namespace string
 	}
 }
 
-func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1alpha1.MetadataBackupPolicy,
-	log logr.Logger) string {
-
+func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1alpha1.MetadataBackupPolicy) string {
 	labelName := "node-role.kubernetes.io/master"
 
 	if policy.Spec.Options == nil {
@@ -219,18 +243,18 @@ func (r *MetadataBackupPolicyReconciler) getMasterNodeLabelName(policy *kubedrv1
 	}
 
 	if len(val) == 0 {
-		log.Error(fmt.Errorf("Invalid value for master node label name in config map (%s)",
+		r.Log.Error(fmt.Errorf("Invalid value for master node label name in config map (%s)",
 			policy.Spec.Options), "")
 		return labelName
 	}
 
-	log.Info(fmt.Sprintf("master node label name in config map (%s): %s", policy.Spec.Options, val))
+	r.Log.Info(fmt.Sprintf("master node label name in config map (%s): %s", policy.Spec.Options, val))
 
 	return val
 }
 
 func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.MetadataBackupPolicy,
-	namespace string, cronJobName string, log logr.Logger) (*batchv1beta1.CronJob, error) {
+	namespace string, cronJobName string) (*batchv1beta1.CronJob, error) {
 
 	labels := map[string]string{
 		"kubedr.type":          "backup",
@@ -241,10 +265,10 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 	if kubedrUtilImage == "" {
 		// This should really not happen.
 		err := fmt.Errorf("KUBEDR_UTIL_IMAGE is not set")
-		log.Error(err, "")
+		r.Log.Error(err, "")
 		return nil, err
 	}
-	log.V(1).Info(fmt.Sprintf("kubedrUtilImage: %s", kubedrUtilImage))
+	r.Log.V(1).Info(fmt.Sprintf("kubedrUtilImage: %s", kubedrUtilImage))
 
 	backupLocation := &kubedrv1alpha1.BackupLocation{}
 	backupLocKey := types.NamespacedName{Namespace: namespace, Name: cr.Spec.Destination}
@@ -256,17 +280,17 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 
 	s3EndPoint := "s3:" + backupLocation.Spec.Url + "/" + backupLocation.Spec.BucketName
 
-	access_key := corev1.SecretKeySelector{}
-	access_key.Name = backupLocation.Spec.Credentials
-	access_key.Key = "access_key"
+	accessKey := corev1.SecretKeySelector{}
+	accessKey.Name = backupLocation.Spec.Credentials
+	accessKey.Key = "access_key"
 
-	secret_key := corev1.SecretKeySelector{}
-	secret_key.Name = backupLocation.Spec.Credentials
-	secret_key.Key = "secret_key"
+	secretKey := corev1.SecretKeySelector{}
+	secretKey.Name = backupLocation.Spec.Credentials
+	secretKey.Key = "secret_key"
 
-	restic_password := corev1.SecretKeySelector{}
-	restic_password.Name = backupLocation.Spec.Credentials
-	restic_password.Key = "restic_repo_password"
+	resticPassword := corev1.SecretKeySelector{}
+	resticPassword.Name = backupLocation.Spec.Credentials
+	resticPassword.Key = "restic_repo_password"
 
 	targetDirVolume := corev1.Volume{Name: "target-dir"}
 	targetDirVolume.EmptyDir = &corev1.EmptyDirVolumeSource{}
@@ -285,19 +309,19 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 		{
 			Name: "AWS_ACCESS_KEY",
 			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &access_key,
+				SecretKeyRef: &accessKey,
 			},
 		},
 		{
 			Name: "AWS_SECRET_KEY",
 			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &secret_key,
+				SecretKeyRef: &secretKey,
 			},
 		},
 		{
 			Name: "RESTIC_PASSWORD",
 			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &restic_password,
+				SecretKeyRef: &resticPassword,
 			},
 		},
 		{
@@ -356,7 +380,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 		env = append(env, corev1.EnvVar{Name: "CERTS_SRC_DIR", Value: "/certs_dir"})
 	}
 
-	masterNodeLabelName := r.getMasterNodeLabelName(cr, log)
+	masterNodeLabelName := r.getMasterNodeLabelName(cr)
 
 	return &batchv1beta1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{

@@ -31,6 +31,7 @@ import (
 // log is for logging in this package.
 var log = logf.Log.WithName("metadatabackuppolicy-resource")
 
+// Configures the web hook with the manager.
 func (r *MetadataBackupPolicy) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
