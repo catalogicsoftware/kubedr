@@ -447,7 +447,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 									Env:          env,
 
 									Args: []string{
-										"sh", "/usr/local/bin/kubedrutil.sh",
+										"/usr/local/bin/kubedrutil", "backup",
 									},
 								},
 							},
