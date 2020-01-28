@@ -136,6 +136,7 @@ func (r *MetadataBackupPolicyReconciler) processSpec(policy *kubedrv1alpha1.Meta
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuppolicies/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=create;get;list;update;patch;delete;watch
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=create;get;list;update;patch;delete;watch
+
 // Reconcile is the the main entry point called by the framework.
 func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
