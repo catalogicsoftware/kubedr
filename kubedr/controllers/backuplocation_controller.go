@@ -89,7 +89,7 @@ func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLoc
 	}
 }
 
-// The main reconcile entry point called by the framework.
+// Reconcile is the the main entry point called by the framework.
 func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("backuplocation", req.NamespacedName)
@@ -265,7 +265,7 @@ func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) 
 	}, nil
 }
 
-// Hooks up this controller with the manager.
+// SetupWithManager hooks up this controller with the manager.
 func (r *BackupLocationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubedrv1alpha1.BackupLocation{}).

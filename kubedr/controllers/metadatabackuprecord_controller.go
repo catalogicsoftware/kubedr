@@ -54,7 +54,7 @@ type MetadataBackupRecordReconciler struct {
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuprecords,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuprecords/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=create;get;list;update;patch;delete;watch
-// The main reconcile entry point called by the framework.
+// Reconcile is the the main entry point called by the framework.
 func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("metadatabackuprecord", req.NamespacedName)
@@ -211,7 +211,7 @@ func (r *MetadataBackupRecordReconciler) cleanupOldSnapDeletionPods(namespace st
 	}
 }
 
-// Hooks up this controller with the manager.
+// SetupWithManager hooks up this controller with the manager.
 func (r *MetadataBackupRecordReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&kubedrv1alpha1.MetadataBackupRecord{},
 		"policy", func(rawObj runtime.Object) []string {

@@ -136,7 +136,7 @@ func (r *MetadataBackupPolicyReconciler) processSpec(policy *kubedrv1alpha1.Meta
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuppolicies/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=create;get;list;update;patch;delete;watch
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=create;get;list;update;patch;delete;watch
-// The main reconcile entry point called by the framework.
+// Reconcile is the the main entry point called by the framework.
 func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("metadatabackuppolicy", req.NamespacedName)
@@ -187,7 +187,7 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 	return r.processSpec(&policy, req.Namespace)
 }
 
-// Hooks up this controller with the manager.
+// SetupWithManager hooks up this controller with the manager.
 func (r *MetadataBackupPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubedrv1alpha1.MetadataBackupPolicy{}).

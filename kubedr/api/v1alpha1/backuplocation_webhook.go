@@ -26,7 +26,7 @@ import (
 // log is for logging in this package.
 var backuplocationlog = logf.Log.WithName("backuplocation-resource")
 
-// Configures the web hook with the manager.
+// SetupWebhookWithManager configures the web hook with the manager.
 func (r *BackupLocation) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
