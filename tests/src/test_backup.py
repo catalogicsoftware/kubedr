@@ -137,9 +137,11 @@ def test_backup(globalconfig, resources):
     if not backup_pod:
         raise Exception("Could not find a completed or running backup")
 
-    resources["backup_pod_name"] = backup_pod.metadata.name
+    pod_name = backup_pod.metadata.name
+    resources["backup_pod_name"] = pod_name
 
     if backup_pod.status.phase == "Running":
-        pod = kubeclient.wait_for_pod_to_be_done(backup_pod.metadata.name)
+        pod = kubeclient.wait_for_pod_to_be_done(pod_name)
+        backup_pod = globalconfig.pod_api.get(pod_name)
 
     assert backup_pod.status.phase == "Succeeded"
