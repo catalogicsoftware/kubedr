@@ -19,9 +19,15 @@ def log_state(namespace, resdata):
     subprocess.call("kubectl -n {} describe backuplocation".format(namespace), shell=True)
     subprocess.call("kubectl -n {} describe metadatabackuppolicy".format(namespace), shell=True)
     subprocess.call("kubectl -n {} describe metadatabackuprecord".format(namespace), shell=True)
-    if "backuploc_init_pod" in resdata:
-        print("Output of 'logs'")
-        subprocess.call("kubectl -n {} logs --all-containers {}".format(namespace, resdata["backuploc_init_pod"]), shell=True)
+
+    print("Output of 'logs'")
+    for pod_name_key in ["backuploc_init_pod", "backup_pod_name"]:
+        if pod_name_key not in resdata:
+            continue
+
+        pod_name = resdata[pod_name_key]
+        print("Output of 'logs' for {}".format(pod_name))
+        subprocess.call("kubectl -n {} logs --all-containers {}".format(namespace, pod_name), shell=True)
 
 # "resources" is used to store state as resources are being created.
 # This allows us to delete all the resources in one place and also
@@ -131,7 +137,9 @@ def test_backup(globalconfig, resources):
     if not backup_pod:
         raise Exception("Could not find a completed or running backup")
 
+    resources["backup_pod_name"] = backup_pod.metadata.name
+
     if backup_pod.status.phase == "Running":
-        pod = kubeclient.wait_for_pod_to_be_done(pod_name)
+        pod = kubeclient.wait_for_pod_to_be_done(backup_pod.metadata.name)
 
     assert backup_pod.status.phase == "Succeeded"

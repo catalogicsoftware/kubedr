@@ -54,6 +54,7 @@ type MetadataBackupRecordReconciler struct {
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuprecords,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuprecords/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=create;get;list;update;patch;delete;watch
+
 // Reconcile is the the main entry point called by the framework.
 func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
