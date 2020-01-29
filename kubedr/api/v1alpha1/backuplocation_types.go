@@ -41,12 +41,12 @@ type BackupLocationSpec struct {
 type BackupLocationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	InitStatus string `json:"initStatus,omitempty"`
+	InitStatus string `json:"initStatus"`
 
 	// +kubebuilder:validation:Optional
-	InitErrorMessage string `json:"initErrorMessage,omitempty"`
+	InitErrorMessage string `json:"initErrorMessage"`
 
-	InitTime string `json:"initTime,omitempty"`
+	InitTime string `json:"initTime"`
 }
 
 // +kubebuilder:object:root=true

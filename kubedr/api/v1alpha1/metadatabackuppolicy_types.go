@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -66,11 +67,33 @@ type MetadataBackupPolicySpec struct {
 
 // MetadataBackupPolicyStatus defines the observed state of MetadataBackupPolicy
 type MetadataBackupPolicyStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	BackupTime   string `json:"backupTime"`
+	BackupStatus string `json:"backupStatus"`
+
+	// +kubebuilder:validation:Optional
+	BackupErrorMessage string `json:"backupErrorMessage"`
+
+	// +kubebuilder:validation:Optional
+	FilesNew uint `json:"filesNew"`
+
+	// +kubebuilder:validation:Optional
+	FilesChanged uint `json:"filesChanged"`
+
+	// +kubebuilder:validation:Optional
+	DataAdded uint64 `json:"dataAdded"`
+
+	// +kubebuilder:validation:Optional
+	TotalBytesProcessed uint64 `json:"totalBytesProcessed"`
+
+	// +kubebuilder:validation:Optional
+	TotalDurationSecs resource.Quantity `json:"totalDurationSecs"`
+
+	// +kubebuilder:validation:Optional
+	SnapshotID string `json:"snapshotId"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // MetadataBackupPolicy is the Schema for the metadatabackuppolicies API
 type MetadataBackupPolicy struct {
