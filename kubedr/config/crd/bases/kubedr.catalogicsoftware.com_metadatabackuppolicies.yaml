@@ -15,6 +15,8 @@ spec:
     plural: metadatabackuppolicies
     singular: metadatabackuppolicy
   scope: ""
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: MetadataBackupPolicy is the Schema for the metadatabackuppolicies
@@ -72,6 +74,30 @@ spec:
           type: object
         status:
           description: MetadataBackupPolicyStatus defines the observed state of MetadataBackupPolicy
+          properties:
+            backupErrorMessage:
+              type: string
+            backupStatus:
+              type: string
+            backupTime:
+              type: string
+            dataAdded:
+              format: int64
+              type: integer
+            filesChanged:
+              type: integer
+            filesNew:
+              type: integer
+            snapshotId:
+              type: string
+            totalBytesProcessed:
+              format: int64
+              type: integer
+            totalDurationSecs:
+              type: string
+          required:
+          - backupStatus
+          - backupTime
           type: object
       type: object
   version: v1alpha1

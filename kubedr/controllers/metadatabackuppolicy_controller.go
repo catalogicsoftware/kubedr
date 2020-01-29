@@ -47,6 +47,8 @@ type MetadataBackupPolicyReconciler struct {
 func (r *MetadataBackupPolicyReconciler) newPolicy(policy *kubedrv1alpha1.MetadataBackupPolicy,
 	namespace string, cronJobName string) (ctrl.Result, error) {
 
+	r.setStatus(policy)
+
 	backupCronjob, err := r.buildBackupCronjob(policy, namespace, cronJobName)
 	if err != nil {
 		r.Log.Error(err, "Error in creating backup cronjob")
@@ -130,6 +132,16 @@ func (r *MetadataBackupPolicyReconciler) processSpec(policy *kubedrv1alpha1.Meta
 
 	// The policy exists. We need to check and make any required changes to cronJob.
 	return r.processUpdate(policy, &cronJob)
+}
+
+func (r *MetadataBackupPolicyReconciler) setStatus(policy *kubedrv1alpha1.MetadataBackupPolicy) {
+	policy.Status.BackupStatus = "Initializing"
+	policy.Status.BackupTime = metav1.Now().String()
+
+	r.Log.Info("Updating status...")
+	if err := r.Status().Update(context.Background(), policy); err != nil {
+		r.Log.Error(err, "unable to update policy status")
+	}
 }
 
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=metadatabackuppolicies,verbs=get;list;watch;create;update;patch;delete
