@@ -86,8 +86,35 @@ def test_creating_backuplocation(globalconfig, resources):
 
     assert backup_loc["metadata"]["annotations"][init_annotation] == "true"
 
+def do_backup(globalconfig, resources, backup_name, backup_spec):
+    print("creating backup: {}".format(backup_name))
+    globalconfig.mbp_api.create(backup_name, backup_spec)
+    resources["backup_name"] = backup_name
+
+    # Wait for cronjob to appear
+    label_selector='kubedr.type=backup,kubedr.backup-policy={}'.format(backup_name)
+    cronjobs = kubeclient.wait_for_cronjob_to_appear(label_selector)
+
+    assert len(cronjobs.items) == 1
+    cronjob_name = cronjobs.items[0].metadata.name
+
+    # Wait for a backup pod to appear and then check its status.
+    # Since the backup schedule is every minute, wait for slightly
+    # longer than a minute before timing out.
+    backup_pod = globalconfig.pod_api.get_by_watch(label_selector, timeout_seconds=75)
+
+    pod_name = backup_pod.metadata.name
+    resources["backup_pod_name"] = pod_name
+
+    phase = backup_pod.status.phase
+    if phase == "Running" or phase == "Pending":
+        pod = kubeclient.wait_for_pod_to_be_done(pod_name)
+        backup_pod = globalconfig.pod_api.read(pod_name)
+
+    assert backup_pod.status.phase == "Succeeded"
+
 @pytest.mark.dependency(depends=["test_creating_backuplocation"])
-def test_backup(globalconfig, resources):
+def test_backup_without_certificates(globalconfig, resources):
     if "etcd_data" not in globalconfig.testenv:
         pytest.skip("etcd data is not given, skipping...")
 
@@ -105,28 +132,31 @@ def test_backup(globalconfig, resources):
         "schedule": "*/1 * * * *"
     }
 
-    print("creating backup: {}".format(backup_name))
-    globalconfig.mbp_api.create(backup_name, backup_spec)
-    resources["backup_name"] = backup_name
+    do_backup(globalconfig, resources, backup_name, backup_spec)
 
-    # Wait for cronjob to appear
-    label_selector='kubedr.type=backup,kubedr.backup-policy={}'.format(backup_name)
-    cronjobs = kubeclient.wait_for_cronjob_to_appear(label_selector)
+@pytest.mark.dependency(depends=["test_creating_backuplocation"])
+def test_backup_with_certificates(globalconfig, resources):
+    if "etcd_data" not in globalconfig.testenv:
+        pytest.skip("etcd data is not given, skipping...")
 
-    assert len(cronjobs.items) == 1
-    cronjob_name = cronjobs.items[0].metadata.name
+    if "certs_dir" not in globalconfig.testenv:
+        pytest.skip("Certificates dir is not given, skipping...")
 
-    # Wait for a backup pod to appear and then check its status.
-    # Since the backup schedule is every minute, wait for slightly
-    # longer than a minute before checking.
-    backup_pod = globalconfig.pod_api.get_by_watch(label_selector, timeout_seconds=75)
+    etcd_data = globalconfig.testenv["etcd_data"]
+    etcd_creds = "{}-{}".format("etcd-creds", timestamp())
+    kubeclient.create_etcd_creds(etcd_creds, etcd_data["ca.crt"], etcd_data["client.crt"],
+                                      etcd_data["client.key"])
 
-    pod_name = backup_pod.metadata.name
-    resources["backup_pod_name"] = pod_name
+    resources["etcd_creds"] = etcd_creds
 
-    phase = backup_pod.status.phase
-    if phase == "Running" or phase == "Pending":
-        pod = kubeclient.wait_for_pod_to_be_done(pod_name)
-        backup_pod = globalconfig.pod_api.read(pod_name)
+    backup_name = "{}-{}".format("backup", timestamp())
+    backup_spec = {
+        "destination": resources["backuploc_name"],
+        "certsDir": globalconfig.testenv["certs_dir"],
+        "etcdCreds": etcd_creds,
+        "schedule": "*/1 * * * *"
+    }
 
-    assert backup_pod.status.phase == "Succeeded"
+    do_backup(globalconfig, resources, backup_name, backup_spec)
+
+

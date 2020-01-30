@@ -9,5 +9,6 @@
         "ca.crt": "/tmp/ca.crt",
         "client.crt": "/tmp/client.crt",
         "client.key": "/tmp/client.key"
-    }
+    },
+    "certs_dir": "/var/lib/minikube/certs"
 }
