@@ -119,29 +119,14 @@ def test_backup(globalconfig, resources):
     # Wait for a backup pod to appear and then check its status.
     # Since the backup schedule is every minute, wait for slightly
     # longer than a minute before checking.
-    time.sleep(70)
-
-    pods = kubeclient.wait_for_pod_to_appear(label_selector)
-
-    # Since the backup runs every minute and we are waiting for more than a
-    # a minute, there are several possibilities:
-    #     - No backups started which is extremely unlikely.
-    #     - A single backup started which either finished or is still running.
-    #     - More than one backup started
-    # To take care of all these scenarios, we first look for completed backup
-    # and if we don't find one, we look for a running backup.
-
-    backup_pod = next((x for x in pods.items if x.status.phase != "Running"), None)
-    if not backup_pod:
-        backup_pod = next((x for x in pods.items if x.status.phase == "Running"), None)
-    if not backup_pod:
-        raise Exception("Could not find a completed or running backup")
+    backup_pod = globalconfig.pod_api.get_by_watch(label_selector, timeout_seconds=75)
 
     pod_name = backup_pod.metadata.name
     resources["backup_pod_name"] = pod_name
 
-    if backup_pod.status.phase == "Running":
+    phase = backup_pod.status.phase
+    if phase == "Running" or phase == "Pending":
         pod = kubeclient.wait_for_pod_to_be_done(pod_name)
-        backup_pod = globalconfig.pod_api.get(pod_name)
+        backup_pod = globalconfig.pod_api.read(pod_name)
 
     assert backup_pod.status.phase == "Succeeded"

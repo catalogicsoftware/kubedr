@@ -4,7 +4,7 @@ import logging
 import time
 import urllib3
 
-from kubernetes import client
+from kubernetes import client, watch
 from kubernetes import config as k8sconfig
 
 import conftest
@@ -79,6 +79,12 @@ class PodAPI(KubeResourceAPI):
     def list(self, label_selector="", timeout_seconds=30):
         return self.v1api.list_namespaced_pod(self.namespace, label_selector=label_selector, 
                                               timeout_seconds=timeout_seconds)
+
+    def get_by_watch(self, label_selector="", timeout_seconds=30):
+        w = watch.Watch()
+        for event in w.stream(self.v1api.list_namespaced_pod, self.namespace,
+                              label_selector=label_selector, timeout_seconds=timeout_seconds):
+            return event['object']
 
     def read(self, name):
         return self.v1api.read_namespaced_pod(name, self.namespace)
