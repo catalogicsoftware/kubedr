@@ -70,6 +70,35 @@ An example::
       totalBytesProcessed: 15736864
       totalDurationSecs: "0.318463127"
 
+Events
+======
+
+*KubeDR* generates events after some operations that can be monitored
+by admins. The following sections provide more details about each such
+event. Note that events are generated in the namespace
+*kubedr-system*. 
+
+Backup repo initialization
+--------------------------
+
+When a ``BackupLocation`` resource is created first time, a backup
+repo is initialized at the given S3 bucket. An event is generated at
+the end of such init process. 
+
+Here is an example of the event generated after successful
+initialization.::
+
+    $ kubectl -n kubedr-system get event
+
+    ...
+    25s  Normal  InitSucceeded    backuplocation/local-minio   Repo at s3:http://10.106.189.174:9000/testbucket62 is successfully initialized
+
+In case of error::
+
+    $ kubectl -n kubedr-system get event
+
+    ...
+    5s   Error  InitFailed        backuplocation/local-minio   Fatal: create key in repository at s3:http://10.106.189.174:9000/testbucket62 failed: repository master key and config already initialized
 
 .. _Prometheus: https://prometheus.io
 .. _Grafana: https://grafanalabs.io
