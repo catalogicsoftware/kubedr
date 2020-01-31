@@ -44,6 +44,7 @@ type BackupLocationReconciler struct {
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=backuplocations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubedr.catalogicsoftware.com,resources=backuplocations/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=create;get
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;get;list;watch;update
 
 /*
 We generally want to ignore (not requeue) NotFound errors, since we'll get a
@@ -231,6 +232,14 @@ func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) 
 						"/usr/local/bin/kubedrutil", "repoinit",
 					},
 					Env: []corev1.EnvVar{
+						{
+							Name: "MY_POD_NAME",
+							ValueFrom: &corev1.EnvVarSource {
+								FieldRef: &corev1.ObjectFieldSelector {
+									FieldPath: "metadata.name",
+								},
+							},
+						},
 						{
 							Name: "AWS_ACCESS_KEY",
 							ValueFrom: &corev1.EnvVarSource{
