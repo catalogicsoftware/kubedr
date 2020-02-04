@@ -21,11 +21,7 @@ def log_state(namespace, resdata):
     subprocess.call("kubectl -n {} describe metadatabackuprecord".format(namespace), shell=True)
 
     print("Output of 'logs'")
-    for pod_name_key in ["backuploc_init_pod", "backup_pod_name"]:
-        if pod_name_key not in resdata:
-            continue
-
-        pod_name = resdata[pod_name_key]
+    for pod_name in resdata["pods"]:
         print("Output of 'logs' for {}".format(pod_name))
         subprocess.call("kubectl -n {} logs --all-containers {}".format(namespace, pod_name), shell=True)
 
@@ -42,7 +38,11 @@ def resources(globalconfig):
     kubeclient.create_backuploc_creds(backuploc_creds, backuploc["access_key"], backuploc["secret_key"],
                                       globalconfig.restic_password)
 
-    resdata = {"backuploc_creds": backuploc_creds}
+    resdata = {"backuploc_creds": backuploc_creds, "pods": []}
+
+    # If we create multiple resources in set up, we need to take care to do clean
+    # up in case there are any errors. This is not an issue right now as we create
+    # only one resource.
 
     yield resdata
 
@@ -78,7 +78,7 @@ def test_creating_backuplocation(globalconfig, resources):
     pod_name = pods.items[0].metadata.name
 
     pod = kubeclient.wait_for_pod_to_be_done(pod_name)
-    resources["backuploc_init_pod"] = pod_name
+    resources["pods"].append(pod_name)
     assert pod.status.phase == "Succeeded"
 
     backup_loc = globalconfig.backuploc_api.get(backuploc_name)
@@ -104,7 +104,7 @@ def do_backup(globalconfig, resources, backup_name, backup_spec):
     backup_pod = globalconfig.pod_api.get_by_watch(label_selector, timeout_seconds=75)
 
     pod_name = backup_pod.metadata.name
-    resources["backup_pod_name"] = pod_name
+    resources["pods"].append(pod_name)
 
     phase = backup_pod.status.phase
     if phase == "Running" or phase == "Pending":
