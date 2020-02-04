@@ -321,8 +321,8 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 	env := []corev1.EnvVar{
 		{
 			Name: "MY_POD_NAME",
-			ValueFrom: &corev1.EnvVarSource {
-				FieldRef: &corev1.ObjectFieldSelector {
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
 					FieldPath: "metadata.name",
 				},
 			},
@@ -437,9 +437,9 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 								NodeAffinity: &corev1.NodeAffinity{
 									RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
 										NodeSelectorTerms: []corev1.NodeSelectorTerm{
-											corev1.NodeSelectorTerm{
+											{
 												MatchExpressions: []corev1.NodeSelectorRequirement{
-													corev1.NodeSelectorRequirement{
+													{
 														Key:      masterNodeLabelName,
 														Operator: "Exists",
 													},
@@ -452,7 +452,7 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 
 							// Tolerate "NoSchedule" taint on master nodes.
 							Tolerations: []corev1.Toleration{
-								corev1.Toleration{
+								{
 									Operator: "Exists",
 									Effect:   "NoSchedule",
 								},
