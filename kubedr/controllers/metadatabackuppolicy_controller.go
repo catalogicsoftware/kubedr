@@ -320,6 +320,14 @@ func (r *MetadataBackupPolicyReconciler) buildBackupCronjob(cr *kubedrv1alpha1.M
 
 	env := []corev1.EnvVar{
 		{
+			Name: "MY_POD_NAME",
+			ValueFrom: &corev1.EnvVarSource {
+				FieldRef: &corev1.ObjectFieldSelector {
+					FieldPath: "metadata.name",
+				},
+			},
+		},
+		{
 			Name: "AWS_ACCESS_KEY",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &accessKey,

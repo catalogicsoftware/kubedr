@@ -100,6 +100,26 @@ In case of error::
     ...
     5s   Error  InitFailed        backuplocation/local-minio   Fatal: create key in repository at s3:http://10.106.189.174:9000/testbucket62 failed: repository master key and config already initialized
 
+Backup
+------
+
+After every backup, an event is generated containing details about
+success or failure and in the case of latter, the event will
+contain relevant error message. Here are couple of sample events.
+
+Success::
+
+    Normal  BackupSucceeded  metadatabackuppolicy/test-backup  Backup completed, snapshot ID: 34abbf1b
+
+Error::
+
+    Error  BackupFailed  metadatabackuppolicy/test-backup  subprocess.CalledProcessError: 
+        Command '['restic', '--json', '-r', 's3:http://10.106.189.174:9000/testbucket63', 
+            '--verbose', 'backup', '/data']' returned non-zero exit status 1. 
+            (Fatal: unable to open config file: Stat: The access key ID you provided does not exist 
+            in our records. Is there a repository at the following location?
+            s3:http://10.106.189.174:9000/testbucket63
+
 .. _Prometheus: https://prometheus.io
 .. _Grafana: https://grafanalabs.io
 
