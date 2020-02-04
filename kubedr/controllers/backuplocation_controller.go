@@ -234,8 +234,8 @@ func buildResticRepoInitPod(cr *kubedrv1alpha1.BackupLocation, log logr.Logger) 
 					Env: []corev1.EnvVar{
 						{
 							Name: "MY_POD_NAME",
-							ValueFrom: &corev1.EnvVarSource {
-								FieldRef: &corev1.ObjectFieldSelector {
+							ValueFrom: &corev1.EnvVarSource{
+								FieldRef: &corev1.ObjectFieldSelector{
 									FieldPath: "metadata.name",
 								},
 							},

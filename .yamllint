@@ -1,10 +1,10 @@
-# Matches gopkg.in/yaml.v2 K8S YAML standard
+# Based on gopkg.in/yaml.v2 K8S YAML standard
 
 extends: default
 
 rules:
-  document-start:
-    present: false
+  document-start: disable
+  empty-lines: disable
   indentation:
     indent-sequences: false
   line-length:
