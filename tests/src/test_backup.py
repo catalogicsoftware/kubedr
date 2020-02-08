@@ -112,6 +112,10 @@ def do_backup(globalconfig, resources, backup_name, backup_spec):
         backup_pod = globalconfig.pod_api.read(pod_name)
 
     assert backup_pod.status.phase == "Succeeded"
+    policy = globalconfig.mbp_api.get(backup_name)
+    pprint.pprint(policy)
+
+    return policy
 
 @pytest.mark.dependency(depends=["test_creating_backuplocation"])
 def test_backup_without_certificates(globalconfig, resources):
@@ -132,7 +136,11 @@ def test_backup_without_certificates(globalconfig, resources):
         "schedule": "*/1 * * * *"
     }
 
-    do_backup(globalconfig, resources, backup_name, backup_spec)
+    policy = do_backup(globalconfig, resources, backup_name, backup_spec)
+
+    status = policy["status"]
+    files_total = status["filesChanged"] + status["filesNew"]
+    assert files_total == 1
 
 @pytest.mark.dependency(depends=["test_creating_backuplocation"])
 def test_backup_with_certificates(globalconfig, resources):
@@ -157,6 +165,9 @@ def test_backup_with_certificates(globalconfig, resources):
         "schedule": "*/1 * * * *"
     }
 
-    do_backup(globalconfig, resources, backup_name, backup_spec)
+    policy = do_backup(globalconfig, resources, backup_name, backup_spec)
 
+    status = policy["status"]
+    files_total = status["filesChanged"] + status["filesNew"]
+    assert files_total > 1
 
