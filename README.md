@@ -1,5 +1,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/catalogicsoftware/kubedr)](https://goreportcard.com/report/github.com/catalogicsoftware/kubedr)
 [![Discuss at kubedr-discuss@googlegroups.com](https://img.shields.io/badge/discuss-kubedr--discuss%40googlegroups.com-blue)](https://groups.google.com/d/forum/kubedr-discuss)
+![Docker Pulls](https://img.shields.io/docker/pulls/catalogicsoftware/kubedr)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
