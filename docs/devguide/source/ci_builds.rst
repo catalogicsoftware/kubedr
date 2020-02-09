@@ -4,11 +4,11 @@
 
 .. note::
 
-   All KubeDR `Catalogic Software` CI/CD Builds are now handled 
-   by `Concourse CI`.
+   All KubeDR `Catalogic Software`_ CI/CD Builds are now handled 
+   by `Concourse CI`_.
 
-All artifacts are created using proper `Semantic Versioning` (semver) schemes
-and use S3 storage backends to store versions.
+All artifacts are created using proper `Semantic Versioning`_ (`semver`) schemes
+and use S3 storage backends to store version history.
 
 Nothing runs on the base shell level on any host, even docker builds
 utilize docker-in-docker (DND) to build / push docker images from
@@ -48,13 +48,8 @@ Releases
 
 Provided all smoke-tests are passing, if the release job is started 
 from Concourse, the pipeline will continue on to package the appropriate 
-semver release assets and trigger a GitHub release.
+semver-formatted release assets and trigger a GitHub release.
 
-References
-==========
-
-.. _Semantic Versioning: https://semver.org/ 
-.. _Concourse CI: https://concourse-ci.org/
+.. _Semantic Versioning: https://semver.org 
+.. _Concourse CI: https://concourse-ci.org
 .. _Catalogic Software: https://catalogicsoftware.com
-
-
