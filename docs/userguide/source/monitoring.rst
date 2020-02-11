@@ -2,16 +2,53 @@
  Monitoring
 ============
 
-*Kubedr* exposes several metrics that can be scraped with
-`Prometheus`_ and visualised using `Grafana`_. Most of the metrics at
-present deal with the internal implementation and hence, are not being
-documented here. 
+There are multiple ways in which KubeDR's operations can be
+monitored. They include:
 
-In the future, several metrics that are useful to the users will be
-added. Some examples:
+- Prometheus metrics
 
-- Number of successful/failed backups
-- Backup size
+- "Status" section of individual resources.
+
+- Kubernetes events
+
+The following sections will elaborate on each of these mechanisms. 
+
+Prometheus Metrics
+==================
+
+*KubeDR* exposes several metrics that can be scraped with
+`Prometheus`_ and visualized using `Grafana`_. Most of the metrics
+deal with the internal implementation but the following ones provide
+very useful information to the user. They are widely known as
+`RED`_ metrics.
+
+kubedr_backup_size_bytes (Gauge)
+    Size of the backup in bytes.
+
+kubedr_num_backups (Counter)
+    Total number of backups.
+
+kubedr_num_successful_backups (Counter)
+    Total number of successful backups.
+
+kubedr_num_failed_backups (Counter)
+    Total number of successful backups.
+
+kubedr_backup_duration_seconds (Histogram)
+    Time (seconds) taken for the backup.
+
+    This metric is a histogram with the following buckets::
+
+        15s, 30s, 1m, 5m, 10m, 15m, 30m, 1h, ...., 10h
+
+All the metrics will have a label called ``policyName`` set to the
+name of the ``MetadataBackupPolicy`` resource.
+
+.. note::
+
+   More details on how exactly Prometheus can be configured to scrape
+   KubeDR's metrics will be provided soon. If you are interested,
+   please check out `issue 26`_.
 
 Status of Resources
 ===================
@@ -122,5 +159,6 @@ Error::
 
 .. _Prometheus: https://prometheus.io
 .. _Grafana: https://grafanalabs.io
-
+.. _RED: https://www.scalyr.com/blog/red-and-monitoring-three-key-metrics-and-why-they-matter/
+.. _issue 26: https://github.com/catalogicsoftware/kubedr/issues/26
 
