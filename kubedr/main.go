@@ -23,6 +23,7 @@ import (
 	kubedrv1alpha1 "kubedr/api/v1alpha1"
 
 	"kubedr/controllers"
+	"kubedr/metrics"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -33,8 +34,9 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme      = runtime.NewScheme()
+	setupLog    = ctrl.Log.WithName("setup")
+	metricsInfo *metrics.MetricsInfo
 )
 
 func init() {
@@ -42,6 +44,9 @@ func init() {
 
 	_ = kubedrv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
+
+	metricsInfo = metrics.NewMetricsInfo()
+	metricsInfo.RegisterAllMetrics()
 }
 
 func main() {
@@ -84,9 +89,10 @@ func main() {
 	}
 
 	if err = (&controllers.MetadataBackupPolicyReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("MetadataBackupPolicy"),
-		Scheme: mgr.GetScheme(),
+		Client:      mgr.GetClient(),
+		Log:         ctrl.Log.WithName("controllers").WithName("MetadataBackupPolicy"),
+		Scheme:      mgr.GetScheme(),
+		MetricsInfo: metricsInfo,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "MetadataBackupPolicy")
 		os.Exit(1)

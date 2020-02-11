@@ -34,13 +34,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	kubedrv1alpha1 "kubedr/api/v1alpha1"
+	"kubedr/metrics"
 )
 
 // MetadataBackupPolicyReconciler reconciles a MetadataBackupPolicy object
 type MetadataBackupPolicyReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log         logr.Logger
+	Scheme      *runtime.Scheme
+	MetricsInfo *metrics.MetricsInfo
 }
 
 // Implements logic to handle a new policy.
@@ -96,7 +98,7 @@ func (r *MetadataBackupPolicyReconciler) processUpdate(policy *kubedrv1alpha1.Me
 		updateCron = true
 	}
 
-	if cronJob.Spec.Suspend != policy.Spec.Suspend {
+	if *cronJob.Spec.Suspend != *policy.Spec.Suspend {
 		r.Log.V(1).Info("suspend status changed")
 		cronJob.Spec.Suspend = policy.Spec.Suspend
 		updateCron = true
@@ -111,8 +113,70 @@ func (r *MetadataBackupPolicyReconciler) processUpdate(policy *kubedrv1alpha1.Me
 	return ctrl.Result{}, nil
 }
 
+// We use information in "Status" field to export metrics.
+// Since reconcile can be called multiple times, we need a way to check
+// whether we already processed a given status. So after processing a
+// backup and added the metrics, we set an annotation to indicate that
+// this particular backup is already processed.
+func (r *MetadataBackupPolicyReconciler) processStatus(policy *kubedrv1alpha1.MetadataBackupPolicy) (ctrl.Result, error) {
+	r.Log.Info("processStatus...")
+
+	backupAnnotation := "processed-backup.annotations.kubedr.catalogicsoftware.com"
+	currentBackupPod := policy.Status.BackupPod
+
+	if currentBackupPod == "" {
+		r.Log.Info("No backup pod so nothing to process...")
+		return ctrl.Result{}, nil
+	}
+
+	processedBackupPod, exists := policy.ObjectMeta.Annotations[backupAnnotation]
+	r.Log.Info(fmt.Sprintf("processStatus: annotation exists: %v, currentBackupPod: %s, processedBackupPod: %s",
+		exists, currentBackupPod, processedBackupPod))
+
+	if exists && (processedBackupPod == currentBackupPod) {
+		r.Log.Info("Already processed the backup...")
+		return ctrl.Result{}, nil
+	}
+
+	r.Log.Info("Processing the backup...")
+
+	// Update metrics
+	policyName := policy.Name
+	backupStatus := policy.Status.BackupStatus
+	r.MetricsInfo.RecordBackup(policyName)
+
+	if backupStatus == "Completed" {
+		r.MetricsInfo.RecordSuccessfulBackup(policyName)
+		r.MetricsInfo.SetBackupSizeBytes(policyName, policy.Status.DataAdded)
+
+		// As I could not find a way to get float value out of resource.Quantity, I am
+		// using its Value() method which always returns rounded up value to
+		// nearest integer (away from 0).
+		r.MetricsInfo.RecordBackupDuration(policyName, float64(policy.Status.TotalDurationSecs.Value()))
+		// r.Log.Info(fmt.Sprintf("Backup duration: %v", policy.Status.TotalDurationSecs))
+	} else {
+		// backup failed
+		r.MetricsInfo.RecordFailedBackup(policyName)
+	}
+
+	// Set the annotation
+	if policy.ObjectMeta.Annotations == nil {
+		policy.ObjectMeta.Annotations = make(map[string]string)
+	}
+	policy.ObjectMeta.Annotations[backupAnnotation] = currentBackupPod
+
+	err := r.Update(context.Background(), policy)
+	if err != nil {
+		// There is no point in requeuing the request since we already updated
+		// the metrics.
+		r.Log.Error(err, "Error in updating the backup annotation, ignoring...")
+	}
+
+	return ctrl.Result{}, nil
+}
+
 // Process spec and make sure it matches status of the world.
-func (r *MetadataBackupPolicyReconciler) processSpec(policy *kubedrv1alpha1.MetadataBackupPolicy,
+func (r *MetadataBackupPolicyReconciler) processSpecAndStatus(policy *kubedrv1alpha1.MetadataBackupPolicy,
 	namespace string) (ctrl.Result, error) {
 
 	var cronJob batchv1beta1.CronJob
@@ -131,7 +195,11 @@ func (r *MetadataBackupPolicyReconciler) processSpec(policy *kubedrv1alpha1.Meta
 	}
 
 	// The policy exists. We need to check and make any required changes to cronJob.
-	return r.processUpdate(policy, &cronJob)
+	if result, err := r.processUpdate(policy, &cronJob); err != nil {
+		return result, err
+	}
+
+	return r.processStatus(policy)
 }
 
 func (r *MetadataBackupPolicyReconciler) setStatus(policy *kubedrv1alpha1.MetadataBackupPolicy) {
@@ -152,19 +220,17 @@ func (r *MetadataBackupPolicyReconciler) setStatus(policy *kubedrv1alpha1.Metada
 // Reconcile is the the main entry point called by the framework.
 func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("metadatabackuppolicy", req.NamespacedName)
-	r.Log = log
 
 	var policy kubedrv1alpha1.MetadataBackupPolicy
 	if err := r.Get(ctx, req.NamespacedName, &policy); err != nil {
 		if apierrors.IsNotFound(err) {
 			// we'll ignore not-found errors, since they can't be fixed by an immediate
 			// requeue (we'll need to wait for a new notification).
-			log.Info("MetadataBackupPolicy (" + req.NamespacedName.Name + ") is not found")
+			r.Log.Info("MetadataBackupPolicy (" + req.NamespacedName.Name + ") is not found")
 			return ctrl.Result{}, nil
 		}
 
-		log.Error(err, "unable to fetch MetadataBackupPolicy")
+		r.Log.Error(err, "unable to fetch MetadataBackupPolicy")
 		return ctrl.Result{}, err
 	}
 
@@ -197,7 +263,7 @@ func (r *MetadataBackupPolicyReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		return ctrl.Result{}, nil
 	}
 
-	return r.processSpec(&policy, req.Namespace)
+	return r.processSpecAndStatus(&policy, req.Namespace)
 }
 
 // SetupWithManager hooks up this controller with the manager.

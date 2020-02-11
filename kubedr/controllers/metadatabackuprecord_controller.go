@@ -30,18 +30,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/prometheus/client_golang/prometheus"
 	kubedrv1alpha1 "kubedr/api/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
-)
-
-var (
-	numDeletedBackups = prometheus.NewCounter(
-		prometheus.CounterOpts{
-			Name: "kubedr_num_metadata_backups_deleted",
-			Help: "Number of metadata backups deleted",
-		},
-	)
 )
 
 // MetadataBackupRecordReconciler reconciles a MetadataBackupRecord object
@@ -169,9 +158,6 @@ func (r *MetadataBackupRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 			log.Error(err, "Error in starting snap delete pod")
 			return ctrl.Result{}, err
 		}
-
-		// FIX: We really need to make sure that delete succeeded.
-		numDeletedBackups.Inc()
 	}
 
 	// Keep last 3 snap deletetion pods and clean up the rest.
@@ -286,9 +272,4 @@ func createResticSnapDeletePod(backupLocation *kubedrv1alpha1.BackupLocation, lo
 			RestartPolicy: "Never",
 		},
 	}, nil
-}
-
-func init() {
-	// Register custom metrics with the global prometheus registry
-	metrics.Registry.MustRegister(numDeletedBackups)
 }
