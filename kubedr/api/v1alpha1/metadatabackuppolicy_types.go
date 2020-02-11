@@ -90,6 +90,10 @@ type MetadataBackupPolicyStatus struct {
 
 	// +kubebuilder:validation:Optional
 	SnapshotID string `json:"snapshotId"`
+
+	// Name of the pod that performed the backup.
+	// +kubebuilder:validation:Optional
+	BackupPod string `json:"backupPod"`
 }
 
 // +kubebuilder:object:root=true
