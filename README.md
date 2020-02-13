@@ -1,4 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/catalogicsoftware/kubedr)](https://goreportcard.com/report/github.com/catalogicsoftware/kubedr)
+[![Discuss at kubedr-discuss@googlegroups.com](https://img.shields.io/badge/discuss-kubedr--discuss%40googlegroups.com-blue)](https://groups.google.com/d/forum/kubedr-discuss)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Open Source Love svg2](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
@@ -69,9 +70,12 @@ see below:
 
 ## Feedback
 
-We would love to hear feedback from users. Please feel free to open
+We would love to hear feedback from our users. Please feel free to open
 issues for bugs as well as for any feature requests.
 
-Please note that the project is in Alpha state so there may be many
+For any questions and discussions, please join us over at our Google Group:
+[kubedr-discuss](https://groups.google.com/d/forum/kubedr-discuss).
+
+Please note that the project is in Alpha so there may be many
 corner cases where things may not work as expected. We are actively
 working on fixing any bugs and on adding new features.
