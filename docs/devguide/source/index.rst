@@ -15,8 +15,7 @@ Welcome to the KubeDR Developer Guide!
    ci_builds
    local_builds
    automated_tests
-
-
+   monitoring
 
 Search
 ======
