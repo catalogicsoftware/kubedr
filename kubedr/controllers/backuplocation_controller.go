@@ -50,7 +50,31 @@ type BackupLocationReconciler struct {
 We generally want to ignore (not requeue) NotFound errors, since we'll get a
 reconciliation request once the object exists, and requeuing in the meantime
 won't help.
+
+Top level Reconcile logic:
+
+- If generation number hasn't changed, do nothing. We don't want to process updates
+  unless spec has changed.
+
+- Add a finalizer if not already present. This will convert deletes to updates
+  and allows us to perform any actions before the resource is actually deleted.
+  However, there is really no delete logic at present.
+
+- Check if the annotation, which indicates that repo is already initialized, is
+  present. If so, there is nothing more to do. If not, proceed with init logic.
+
+- Since we don't generate a unique name for init pod, it is possible that pod
+  from a previous attempt still exists. So check for such a pod and delete it.
+  We may eventually use unique names but that requires clean up of old pods.
+  Also note that the name of the pod includes BackupLocation resource name so it
+  is not a hard-coded name really.
+
+- Create the pod that will initialize the repo. The kubedrutil "repoinit" command
+  will call restic to initialize the repo and it will then set the annotation to
+  indicate that repo is initialized. It will also set the status both in case of
+  success and failure.
 */
+
 func ignoreNotFound(err error) error {
 	if apierrors.IsNotFound(err) {
 		return nil
@@ -74,6 +98,9 @@ func ignoreErrors(err error) error {
 }
 
 func (r *BackupLocationReconciler) setStatus(backupLoc *kubedrv1alpha1.BackupLocation, status string, errmsg string) {
+	// Allows us to check and skip reconciles for only metadata updates.
+	backupLoc.Status.ObservedGeneration = backupLoc.ObjectMeta.Generation
+
 	backupLoc.Status.InitStatus = status
 	if errmsg == "" {
 		// For some reason, empty error string is causing problems even though
@@ -106,6 +133,13 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 		log.Error(err, "unable to fetch BackupLocation")
 		return ctrl.Result{}, err
+	}
+
+	// Skip if spec hasn't changed. This check prevents reconcile on status
+	// updates.
+	if backupLoc.Status.ObservedGeneration == backupLoc.ObjectMeta.Generation {
+		r.Log.Info("Skipping reconcile as generation number hasn't changed")
+		return ctrl.Result{}, nil
 	}
 
 	finalizer := "backuplocation.finalizers.kubedr.catalogicsoftware.com"
@@ -149,13 +183,20 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, nil
 	}
 
-	// Check if init pod is already created and if so, return.
-	var pod corev1.Pod
-	if err := r.Get(ctx,
-		types.NamespacedName{Namespace: req.Namespace, Name: backupLoc.Name + "-init-pod"},
-		&pod); err == nil {
+	// Annotation doesn't exist so we need to initialize the repo.
 
-		return ctrl.Result{}, nil
+	initPodName := backupLoc.Name + "-init-pod"
+
+	// Since we don't generate a unique name for the pod that initializes the repo,
+	// we need to explicitly check and delete the pod if it exists. We may eventually
+	// use a unique name but that will also require cleanup of old pods.
+	var pod corev1.Pod
+	if err := r.Get(ctx, types.NamespacedName{Namespace: req.Namespace, Name: initPodName}, &pod); err == nil {
+		log.Info("Found init pod, will delete it and continue...")
+		if err := r.Delete(ctx, &pod); ignoreNotFound(err) != nil {
+			log.Error(err, "Error in deleting init pod")
+			return ctrl.Result{}, err
+		}
 	}
 
 	r.setStatus(&backupLoc, "Initializing", "")
@@ -174,15 +215,8 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	log.Info("Creating a new Pod", "Pod.Namespace", initPod.Namespace, "Pod.Name", initPod.Name)
 	err = r.Create(ctx, initPod)
 	if err != nil {
-		// Do nothing if pod creation failed because there is already an existing
-		// init pod. This check prevents cycles.
-		if apierrors.IsAlreadyExists(err) {
-			log.Info("Creation of init pod failed because it already exists")
-			r.setStatus(&backupLoc, "Failed", "Init pod already exists")
-		} else {
-			r.setStatus(&backupLoc, "Failed", err.Error())
-			return ctrl.Result{}, err
-		}
+		r.setStatus(&backupLoc, "Failed", err.Error())
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, nil

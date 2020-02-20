@@ -41,6 +41,10 @@ type BackupLocationSpec struct {
 type BackupLocationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// +kubebuilder:validation:Optional
+	ObservedGeneration int64 `json:"observedGeneration"`
+
 	InitStatus string `json:"initStatus"`
 
 	// +kubebuilder:validation:Optional
