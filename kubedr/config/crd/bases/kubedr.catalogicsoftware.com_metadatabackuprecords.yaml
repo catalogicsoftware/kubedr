@@ -35,6 +35,9 @@ spec:
         spec:
           description: MetadataBackupRecordSpec defines the desired state of MetadataBackupRecord
           properties:
+            backuploc:
+              description: kubebuilder:validation:MinLength:=1
+              type: string
             policy:
               description: kubebuilder:validation:MinLength:=1
               type: string
@@ -42,6 +45,7 @@ spec:
               description: kubebuilder:validation:MinLength:=1
               type: string
           required:
+          - backuploc
           - policy
           - snapshotId
           type: object

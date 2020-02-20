@@ -33,6 +33,9 @@ type MetadataBackupRecordSpec struct {
 
 	// kubebuilder:validation:MinLength:=1
 	Policy string `json:"policy"`
+
+	// kubebuilder:validation:MinLength:=1
+	Backuploc string `json:"backuploc"`
 }
 
 // MetadataBackupRecordStatus defines the observed state of MetadataBackupRecord
