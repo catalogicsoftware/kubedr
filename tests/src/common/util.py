@@ -55,6 +55,7 @@ def create_pvc_for_pv(pv):
                 "storage": pv.spec.capacity["storage"]
             }
         },
+        "storageClassName": "standard",
         "volumeMode": "Filesystem",
         "volumeName": pv.metadata.name
     }

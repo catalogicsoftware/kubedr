@@ -48,7 +48,7 @@ def resources(globalconfig):
     kubeclient.create_backuploc_creds(backuploc_creds, backuploc["access_key"], backuploc["secret_key"],
                                       globalconfig.restic_password)
 
-    resdata = {"backuploc_creds": backuploc_creds, "pods": []}
+    resdata = {"backuploc_creds": backuploc_creds, "pods": [], "backup_names": []}
 
     # If we create multiple resources in set up, we need to take care to do clean
     # up in case there are any errors. This is not an issue right now as we create
@@ -59,7 +59,10 @@ def resources(globalconfig):
     util.ignore_errors(lambda: log_state(globalconfig.namespace, resdata))
 
     util.ignore_errors_pred("restore_name" in resdata, lambda: globalconfig.mr_api.delete(resdata["restore_name"]))
-    util.ignore_errors_pred("backup_name" in resdata, lambda: globalconfig.mbp_api.delete(resdata["backup_name"]))
+
+    for backup_name in resdata.get("backup_names", []):
+        util.ignore_errors(lambda: globalconfig.mbp_api.delete(backup_name))
+
     util.ignore_errors_pred("etcd_creds" in resdata, lambda: globalconfig.secret_api.delete(resdata["etcd_creds"]))
     util.ignore_errors_pred("backuploc_name" in resdata, lambda: globalconfig.backuploc_api.delete(resdata["backuploc_name"]))
     util.ignore_errors_pred("pvc_name" in resdata, lambda: globalconfig.pvc_api.delete(resdata["pvc_name"]))
@@ -107,7 +110,7 @@ def test_creating_backuplocation(globalconfig, resources):
 def do_backup(globalconfig, resources, backup_name, backup_spec):
     print("creating backup: {}".format(backup_name))
     globalconfig.mbp_api.create(backup_name, backup_spec)
-    resources["backup_name"] = backup_name
+    resources["backup_names"].append(backup_name)
 
     # Wait for cronjob to appear
     label_selector='kubedr.type=backup,kubedr.backup-policy={}'.format(backup_name)
