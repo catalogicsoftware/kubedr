@@ -1,0 +1,7 @@
+apiVersion: kubedr.catalogicsoftware.com/v1alpha1
+kind: MetadataRestore
+metadata:
+  name: metadatarestore-sample
+spec:
+  # Add fields here
+  foo: bar

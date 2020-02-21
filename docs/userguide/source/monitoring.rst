@@ -103,9 +103,14 @@ An example::
       dataAdded: 1573023
       filesChanged: 1
       filesNew: 0
+      mbrName': mbr-4c1223d6
       snapshotId: b0f347ef
       totalBytesProcessed: 15736864
       totalDurationSecs: "0.318463127"
+
+Apart from the stats regarding the backup, the status also contains
+the name of the ``MetadataBackupRecord`` resource that is required to
+perform restores.
 
 Events
 ======

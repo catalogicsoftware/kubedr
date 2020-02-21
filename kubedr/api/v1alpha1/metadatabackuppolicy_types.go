@@ -94,6 +94,9 @@ type MetadataBackupPolicyStatus struct {
 	// Name of the pod that performed the backup.
 	// +kubebuilder:validation:Optional
 	BackupPod string `json:"backupPod"`
+
+	// +kubebuilder:validation:Optional
+	MBRName string `json:"mbrName"`
 }
 
 // +kubebuilder:object:root=true
