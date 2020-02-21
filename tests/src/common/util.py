@@ -59,6 +59,17 @@ def create_pvc_for_pv(pv):
         "volumeName": pv.metadata.name
     }
 
-    return pvc_api.create(name, spec)
+    pvc = pvc_api.create(name, spec)
+
+    # Wait till PVC is bound
+    for i in range(30):
+        time.sleep(1)
+
+        pvc = pvc_api.get(name)
+        if pvc.status.phase == "Bound":
+            return pvc
+
+    raise Exception("PVC {} did not change to 'Bound' status.".format(name))
+
 
 
