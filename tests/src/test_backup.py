@@ -1,5 +1,7 @@
 
+import os
 import pprint
+import shutil
 import subprocess
 import time
 
@@ -15,15 +17,23 @@ def log_state(namespace, resdata):
     # Capture the state before cleaning up resources. This will help in
     # debugging.
     print("Output of 'describe all'")
+    subprocess.call("kubectl describe persistentvolume", shell=True)
     subprocess.call("kubectl -n {} describe all".format(namespace), shell=True)
     subprocess.call("kubectl -n {} describe backuplocation".format(namespace), shell=True)
     subprocess.call("kubectl -n {} describe metadatabackuppolicy".format(namespace), shell=True)
     subprocess.call("kubectl -n {} describe metadatabackuprecord".format(namespace), shell=True)
+    subprocess.call("kubectl -n {} describe metadatarestore".format(namespace), shell=True)
+    subprocess.call("kubectl -n {} describe persistentvolumeclaim".format(namespace), shell=True)
 
     print("Output of 'logs'")
     for pod_name in resdata["pods"]:
         print("Output of 'logs' for {}".format(pod_name))
         subprocess.call("kubectl -n {} logs --all-containers {}".format(namespace, pod_name), shell=True)
+
+    if "pv_path" in resdata:
+        print("contents of PV dir {}".format(resdata["pv_path"]))
+        cmd = "ls -lR {}".format(resdata["pv_path"])
+        subprocess.call(cmd, shell=True)
 
 # "resources" is used to store state as resources are being created.
 # This allows us to delete all the resources in one place and also
@@ -48,9 +58,17 @@ def resources(globalconfig):
 
     util.ignore_errors(lambda: log_state(globalconfig.namespace, resdata))
 
+    util.ignore_errors_pred("restore_name" in resdata, lambda: globalconfig.mr_api.delete(resdata["restore_name"]))
     util.ignore_errors_pred("backup_name" in resdata, lambda: globalconfig.mbp_api.delete(resdata["backup_name"]))
     util.ignore_errors_pred("etcd_creds" in resdata, lambda: globalconfig.secret_api.delete(resdata["etcd_creds"]))
     util.ignore_errors_pred("backuploc_name" in resdata, lambda: globalconfig.backuploc_api.delete(resdata["backuploc_name"]))
+    util.ignore_errors_pred("pvc_name" in resdata, lambda: globalconfig.pvc_api.delete(resdata["pvc_name"]))
+
+    # PV should have been automatically deleted when PVC is deleted but just in case,
+    # PVC was not created or to take care of any corner cases, try to delete pV any way.
+    util.ignore_errors_pred("pv_name" in resdata, lambda: globalconfig.pvc_api.delete(resdata["pv_name"]))
+    util.ignore_errors_pred("pv_path" in resdata, lambda: shutil.rmtree(resdata["pv_path"]))
+
     util.ignore_errors(lambda: globalconfig.secret_api.delete(backuploc_creds))
 
 @pytest.mark.dependency()
@@ -168,6 +186,40 @@ def test_backup_with_certificates(globalconfig, resources):
     policy = do_backup(globalconfig, resources, backup_name, backup_spec)
 
     status = policy["status"]
+    resources["mbr_with_certs"] = status["mbrName"]
     files_total = status["filesChanged"] + status["filesNew"]
     assert files_total > 1
 
+@pytest.mark.dependency(depends=["test_backup_with_certificates"])
+def test_restore(globalconfig, resources):
+    pv = util.create_hostpath_pv()
+    resources["pv_name"] = pv.metadata.name
+    resources["pv_path"] = pv.spec.host_path.path
+
+    pvc = util.create_pvc_for_pv(pv)
+    resources["pvc_name"] = pvc.metadata.name
+
+    mr_name = "{}-{}".format("mr", timestamp())
+    mr_spec = {
+        "mbrName": resources["mbr_with_certs"],
+        "pvcName": resources["pvc_name"]
+    }
+
+    globalconfig.mr_api.create(mr_name, mr_spec)
+    resources["restore_name"] = mr_name
+
+    label_selector='kubedr.type=restore,kubedr.restore-mbr={}'.format(mr_spec["mbrName"])
+    restore_pod = globalconfig.pod_api.get_by_watch(label_selector)
+
+    pod_name = restore_pod.metadata.name
+    resources["pods"].append(pod_name)
+
+    phase = restore_pod.status.phase
+    if phase == "Running" or phase == "Pending":
+        pod = kubeclient.wait_for_pod_to_be_done(pod_name)
+        restore_pod = globalconfig.pod_api.read(pod_name)
+
+    assert restore_pod.status.phase == "Succeeded"
+    assert os.path.exists("{}/data/etcd-snapshot.db".format(resources["pv_path"]))
+    assert os.path.exists("{}/data/certificates".format(resources["pv_path"]))
+    assert os.listdir(resources["pv_path"])

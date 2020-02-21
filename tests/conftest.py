@@ -53,7 +53,10 @@ class GlobalConfig:
         self.pod_api = kubeclient.PodAPI(self.namespace)
         self.backuploc_api = kubeclient.BackupLocationAPI(self.namespace)
         self.mbp_api = kubeclient.MetadataBackupPolicyAPI(self.namespace)
+        self.mr_api = kubeclient.MetadataRestoreAPI(self.namespace)
         self.secret_api = kubeclient.SecretAPI(self.namespace)
+        self.pvc_api = kubeclient.PersistentVolumeClaimAPI(self.namespace)
+        self.pv_api = kubeclient.PersistentVolumeAPI()
 
 # This is being set as a global variable so that library code
 # such as "kubeclient" can easily access the configuration set

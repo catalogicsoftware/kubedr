@@ -203,6 +203,7 @@ func (r *MetadataBackupPolicyReconciler) processSpecAndStatus(policy *kubedrv1al
 }
 
 func (r *MetadataBackupPolicyReconciler) setStatus(policy *kubedrv1alpha1.MetadataBackupPolicy) {
+	policy.Status.MBRName = ""
 	policy.Status.BackupStatus = "Initializing"
 	policy.Status.BackupTime = metav1.Now().String()
 

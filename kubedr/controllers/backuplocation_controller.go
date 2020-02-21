@@ -212,9 +212,10 @@ func (r *BackupLocationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		return ctrl.Result{}, err
 	}
 
-	log.Info("Creating a new Pod", "Pod.Namespace", initPod.Namespace, "Pod.Name", initPod.Name)
+	log.Info("Starting a new Pod", "Pod.Namespace", initPod.Namespace, "Pod.Name", initPod.Name)
 	err = r.Create(ctx, initPod)
 	if err != nil {
+		r.Log.Error(err, "Error in starting init pod")
 		r.setStatus(&backupLoc, "Failed", err.Error())
 		return ctrl.Result{}, err
 	}

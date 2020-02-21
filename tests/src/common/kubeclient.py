@@ -19,6 +19,7 @@ class KubeResourceAPI:
     def create_metadata(self, name):
         metadata = client.V1ObjectMeta()
         metadata.name = name
+        metadata.namespace = self.namespace
 
         return metadata
 
@@ -41,7 +42,7 @@ class KubedrV1AlphaResource(KubeResourceAPI):
         self.res["metadata"] = {"name": name}
         self.res["spec"] = spec
 
-        self.cr_api.create_namespaced_custom_object(
+        return self.cr_api.create_namespaced_custom_object(
             group=self.group, version=self.version, namespace=self.namespace, plural=self.plural,
             body=self.res)
 
@@ -64,13 +65,42 @@ class SecretAPI(KubeResourceAPI):
         body.data = data
 
         body.metadata = self.create_metadata(name)
-        body.metadata.namespace = self.namespace
 
-        self.v1api.create_namespaced_secret(body.metadata.namespace, body)
+        return self.v1api.create_namespaced_secret(body.metadata.namespace, body)
 
     def delete(self, name):
         self.v1api.delete_namespaced_secret(name, self.namespace, 
                                             body=client.V1DeleteOptions())
+
+class PersistentVolumeAPI(KubeResourceAPI):
+    def __init__(self):
+        super().__init__()
+
+    def create(self, name, spec):
+        body = client.V1PersistentVolume()
+        body.spec = spec
+
+        body.metadata = self.create_metadata(name)
+
+        return self.v1api.create_persistent_volume(body)
+
+    def delete(self, name):
+        self.v1api.delete_persistent_volume(name, body=client.V1DeleteOptions())
+
+class PersistentVolumeClaimAPI(KubeResourceAPI):
+    def __init__(self, namespace="default"):
+        super().__init__(namespace)
+
+    def create(self, name, spec):
+        body = client.V1PersistentVolumeClaim()
+        body.spec = spec
+
+        body.metadata = self.create_metadata(name)
+
+        return self.v1api.create_namespaced_persistent_volume_claim(self.namespace, body)
+
+    def delete(self, name):
+        self.v1api.delete_namespaced_persistent_volume_claim(name, self.namespace, body=client.V1DeleteOptions())
 
 class PodAPI(KubeResourceAPI):
     def __init__(self, namespace="default"):
@@ -113,6 +143,12 @@ class MetadataBackupPolicyAPI(KubedrV1AlphaResource):
         self.kind = "MetadataBackupPolicy"
         self.plural = "metadatabackuppolicies"
 
+class MetadataRestoreAPI(KubedrV1AlphaResource):
+    def __init__(self, namespace="default"):
+        super().__init__(namespace)
+        self.kind = "MetadataRestore"
+        self.plural = "metadatarestores"
+
 def create_backuploc_creds(name, access_key, secret_key, restic_password):
     creds_data = {
         "access_key": base64.b64encode(access_key.encode("utf-8")).decode("utf-8"),
@@ -120,7 +156,7 @@ def create_backuploc_creds(name, access_key, secret_key, restic_password):
         "restic_repo_password": base64.b64encode(restic_password.encode("utf-8")).decode("utf-8")
     }
     secret_api = SecretAPI(namespace="kubedr-system")
-    secret_api.create(name, creds_data)
+    return secret_api.create(name, creds_data)
 
 def create_etcd_creds(name, ca_crt, client_crt, client_key):
     creds_data = {
@@ -129,7 +165,7 @@ def create_etcd_creds(name, ca_crt, client_crt, client_key):
         "client.key": base64.b64encode(open(client_key, "rb").read()).decode("utf-8")
     }
     secret_api = SecretAPI(namespace="kubedr-system")
-    secret_api.create(name, creds_data)
+    return secret_api.create(name, creds_data)
 
 def wait_for_pod_to_appear(label_selector):
     num_attempts = conftest.envconfig.wait_for_res_to_appear_num_attempts
