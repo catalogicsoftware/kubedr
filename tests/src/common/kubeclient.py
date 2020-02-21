@@ -99,6 +99,9 @@ class PersistentVolumeClaimAPI(KubeResourceAPI):
 
         return self.v1api.create_namespaced_persistent_volume_claim(self.namespace, body)
 
+    def get(self, name):
+        return self.v1api.read_namespaced_persistent_volume_claim(name, self.namespace)
+
     def delete(self, name):
         self.v1api.delete_namespaced_persistent_volume_claim(name, self.namespace, body=client.V1DeleteOptions())
 
