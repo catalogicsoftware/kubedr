@@ -143,7 +143,8 @@ func (r *MetadataRestoreReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 			// This shouldn't really happen but if an invalid MBR is given or
 			// if backup location inside the MBR is wrong, there is nothing we can
 			// do.
-			r.setStatus(&mr, "Failed", "Error in creating restore pod")
+			r.setStatus(&mr, "Failed",
+				fmt.Sprintf("Error in creating restore pod, reason (%s)", err.Error()))
 			return ctrl.Result{}, nil
 		}
 
