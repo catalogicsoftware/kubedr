@@ -34,9 +34,10 @@ MetadataBackupPolicy
     Describes the backup policy.
 
 MetadataBackupRecord
-    Represents a successful backup. It is not being used in restores
-    at present but once granular restore feature is added, this
-    resource will be used.
+    Created after every successful backup. 
+
+MetadataRestore
+    Creation of this resource triggers a restore.
 
 Kubernetes Resources
 --------------------
