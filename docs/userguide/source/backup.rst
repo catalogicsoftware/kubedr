@@ -109,5 +109,45 @@ called ``policy.yaml``, create the resource by running the command:
 
 At this time, *Kubedr* will create a `cronjob`_ resource.
 
+After every successful backup, *KubeDR* creates a resource of the type
+``MetadataBackupRecord`` which contains the snapshot ID of the
+backup. This resource acts as a "catalog" for the backups. Here is one
+such sample resource::
+
+    apiVersion: kubedr.catalogicsoftware.com/v1alpha1
+    kind: MetadataBackupRecord
+    metadata:
+      creationTimestamp: "2020-02-21T18:35:10Z"
+      finalizers:
+      - mbr.finalizers.kubedr.catalogicsoftware.com
+      generation: 2
+      name: mbr-00f2bb92
+      namespace: kubedr-system
+      resourceVersion: "1739627"
+      selfLink: /apis/kubedr.catalogicsoftware.com/v1alpha1/namespaces/kubedr-system/metadatabackuprecords/mbr-00f2bb92
+      uid: 50cf3088-7763-4d8a-bb8b-0c308b1fbdac
+    spec:
+      backuploc: tests3-1582310048
+      policy: backup-1582310055
+      snapshotId: 00f2bb92
+
+As can be seen, the spec of ``MetadataBackupRecord`` has three pieces
+of information.
+
+backuploc
+    Points to the ``BackupLocation`` resource used for the backup.
+
+policy
+    Name of the ``MetadataBackupPolicy`` resource.
+
+snapshotId
+    Snapshot ID of the backup. This value is used in restores.
+
+In addition to creating the above resource, *KubeDR* also generates an
+event both in case of success as well as in case of any
+failures. Please check :ref:`Backup Events<Backup events>` for more
+details.
+    
+
 .. _cronjob: https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs
 

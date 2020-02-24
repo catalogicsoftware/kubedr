@@ -112,6 +112,22 @@ Apart from the stats regarding the backup, the status also contains
 the name of the ``MetadataBackupRecord`` resource that is required to
 perform restores.
 
+MetadataRestore
+---------------
+
+This resource defines a restore and its *status* field indicates
+success or failure of the operation.
+
+Success::
+
+    restoreErrorMessage: ""
+    restoreStatus: Completed
+
+Error::
+
+    restoreErrorMessage: Error in creating restore pod
+    restoreStatus: Failed
+
 Events
 ======
 
@@ -142,6 +158,9 @@ In case of error::
     ...
     5s   Error  InitFailed        backuplocation/local-minio   Fatal: create key in repository at s3:http://10.106.189.174:9000/testbucket62 failed: repository master key and config already initialized
 
+.. _Backup events:
+
+
 Backup
 ------
 
@@ -161,6 +180,28 @@ Error::
             (Fatal: unable to open config file: Stat: The access key ID you provided does not exist 
             in our records. Is there a repository at the following location?
             s3:http://10.106.189.174:9000/testbucket63
+
+Restore
+-------
+
+After every restore, an event is generated containing details about
+success or failure and in the case of latter, the event will
+contain relevant error message. Here are couple of sample events.
+
+Success::
+
+    Normal  RestoreSucceeded metadatarestore/mrtest  Restore from snapshot 5bbc8b1a completed
+
+Error::
+
+    Error RestoreFailed  metadatarestore/mrtest subprocess.CalledProcessError: 
+        Command '['restic', '-r', 's3:http://10.106.189.175:9000/testbucket110', 
+        '--verbose', 'restore', '--target', '/restore', '5bbc8b1a']' returned non-zero exit 
+        status 1. (Fatal: unable to open config file: Stat: 
+        Get http://10.106.189.175:9000/testbucket110/?location=: 
+        dial tcp 10.106.189.175:9000: i/o timeout
+        Is there a repository at the following location?
+        s3:http://10.106.189.175:9000/testbucket110)
 
 .. _Prometheus: https://prometheus.io
 .. _Grafana: https://grafanalabs.io
