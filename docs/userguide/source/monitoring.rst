@@ -204,7 +204,7 @@ Error::
         s3:http://10.106.189.175:9000/testbucket110)
 
 .. _Prometheus: https://prometheus.io
-.. _Grafana: https://grafanalabs.io
+.. _Grafana: https://grafana.com
 .. _RED: https://www.scalyr.com/blog/red-and-monitoring-three-key-metrics-and-why-they-matter/
 .. _issue 26: https://github.com/catalogicsoftware/kubedr/issues/26
 
